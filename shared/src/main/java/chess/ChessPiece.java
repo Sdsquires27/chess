@@ -2,6 +2,8 @@ package chess;
 
 import chess.moves.BishopMoveStrategy;
 import chess.moves.MoveStrategy;
+import chess.moves.QueenMoveStrategy;
+import chess.moves.RookMoveStrategy;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -72,10 +74,10 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         MoveStrategy strategy = switch (type) {
             case PieceType.KING -> throw new RuntimeException("Not implemented");
-            case PieceType.QUEEN -> throw new RuntimeException("Not implemented");
+            case PieceType.QUEEN -> new QueenMoveStrategy(board, myPosition, pieceColor);
             case PieceType.BISHOP -> new BishopMoveStrategy(board, myPosition, pieceColor);
             case PieceType.KNIGHT -> throw new RuntimeException("Not implemented");
-            case PieceType.ROOK -> throw new RuntimeException("Not implemented");
+            case PieceType.ROOK -> new RookMoveStrategy(board, myPosition, pieceColor);
             case PieceType.PAWN -> throw new RuntimeException("Not implemented");
             default -> throw new IllegalStateException("Unexpected value: " + type);
         };
