@@ -1,5 +1,6 @@
 package chess;
 
+import chess.moves.BishopMoveStrategy;
 import chess.moves.MoveStrategy;
 
 import java.util.Collection;
@@ -15,7 +16,7 @@ public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
     }
@@ -36,14 +37,14 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        return pieceColor;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        throw new RuntimeException("Not implemented");
+        return type;
     }
 
     /**
@@ -54,22 +55,16 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        MoveStrategy strategy;
-        switch (type) {
-            case PieceType.KING:
-                strategy = new
-            case PieceType.QUEEN:
-                throw new RuntimeException("Not implemented");
-            case PieceType.BISHOP:
-                throw new RuntimeException("Not implemented");
-            case PieceType.KNIGHT:
-                throw new RuntimeException("Not implemented");
-            case PieceType.ROOK:
-                throw new RuntimeException("Not implemented");
-            case PieceType.PAWN:
-                throw new RuntimeException("Not implemented");
-        }
-        return strategy.validMoves(board, myPosition);
+        MoveStrategy strategy = switch (type) {
+            case PieceType.KING -> throw new RuntimeException("Not implemented");
+            case PieceType.QUEEN -> throw new RuntimeException("Not implemented");
+            case PieceType.BISHOP -> new BishopMoveStrategy(board, myPosition, pieceColor);
+            case PieceType.KNIGHT -> throw new RuntimeException("Not implemented");
+            case PieceType.ROOK -> throw new RuntimeException("Not implemented");
+            case PieceType.PAWN -> throw new RuntimeException("Not implemented");
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
+        return strategy.validMoves();
     }
 }
 
