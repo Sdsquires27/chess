@@ -44,7 +44,6 @@ public abstract class MoveStrategy {
                     break;
                 }
                 moves.add(new ChessMove(position, newPos, null));
-                System.out.println(newPos.getRow() +" " + newPos.getColumn());
                 curPos = newPos;
             }
 
