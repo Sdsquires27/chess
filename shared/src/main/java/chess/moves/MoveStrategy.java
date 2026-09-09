@@ -12,9 +12,9 @@ import java.util.List;
 public abstract class MoveStrategy {
 
     private final int[][] directions;
-    final ChessBoard board;
-    final ChessPosition position;
-    final ChessGame.TeamColor color;
+    private final ChessBoard board;
+    private final ChessPosition position;
+    private final ChessGame.TeamColor color;
 
     protected MoveStrategy(int[][] directions, ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
         this.directions = directions;

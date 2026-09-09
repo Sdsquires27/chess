@@ -21,9 +21,14 @@ public class KnightMoveStrategy extends MoveStrategy {
             {-1, -2},
             {-1, 2},
     };
-
+    private final ChessPosition position;
+    private final ChessBoard board;
+    private final ChessGame.TeamColor color;
     public KnightMoveStrategy(ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
         super(null, board, position, color);
+        this.position = position;
+        this.board = board;
+        this.color = color;
     }
 
     @Override
