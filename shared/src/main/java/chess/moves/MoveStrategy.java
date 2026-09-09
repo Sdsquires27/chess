@@ -12,9 +12,9 @@ import java.util.List;
 public abstract class MoveStrategy {
 
     private final int[][] directions;
-    private final ChessBoard board;
-    private final ChessPosition position;
-    private final ChessGame.TeamColor color;
+    final ChessBoard board;
+    final ChessPosition position;
+    final ChessGame.TeamColor color;
 
     protected MoveStrategy(int[][] directions, ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
         this.directions = directions;
@@ -32,10 +32,10 @@ public abstract class MoveStrategy {
             while (true) {
                 var row = curPos.getRow() + direction[0];
                 var col = curPos.getColumn() + direction[1];
-                if (row > 8 || col > 8 || row < 1 || col < 1) {
+                if (OutsideBounds(row, col)){
                     break;
                 }
-                var newPos = new ChessPosition(row, col );
+                var newPos = new ChessPosition(row, col);
                 var piece = board.getPiece(newPos);
                 if (piece != null){
                     if (piece.getTeamColor() != color){
@@ -49,6 +49,10 @@ public abstract class MoveStrategy {
 
         }
         return moves;
+    }
+
+    boolean OutsideBounds(int row, int col){
+        return row > 8 || col > 8 || row < 1 || col < 1;
     }
 }
 

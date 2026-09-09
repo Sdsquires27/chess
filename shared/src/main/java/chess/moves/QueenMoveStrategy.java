@@ -25,7 +25,6 @@ public class QueenMoveStrategy extends MoveStrategy {
     }
     @Override
     public Collection<ChessMove> validMoves() {
-
         return MoveDownLine();
     }
 }
