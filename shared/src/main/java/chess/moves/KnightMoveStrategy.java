@@ -11,7 +11,7 @@ import java.util.List;
 
 public class KnightMoveStrategy extends MoveStrategy {
 
-    private static final int[][] directions = {
+    private static final int[][] DIRECTIONS = {
             {2, 1},
             {2, -1},
             {1, -2},
@@ -25,7 +25,7 @@ public class KnightMoveStrategy extends MoveStrategy {
     private final ChessBoard board;
     private final ChessGame.TeamColor color;
     public KnightMoveStrategy(ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
-        super(directions, board, position, color);
+        super(DIRECTIONS, board, position, color);
         this.position = position;
         this.board = board;
         this.color = color;
@@ -33,20 +33,6 @@ public class KnightMoveStrategy extends MoveStrategy {
 
     @Override
     public Collection<ChessMove> validMoves() {
-        List<ChessMove> moves = new ArrayList<>();
-        for (var direction : directions) {
-            var row = position.getRow() + direction[0];
-            var col = position.getColumn() + direction[1];
-            if (outsideBounds(row, col)) {
-                continue;
-            }
-            var newPos = new ChessPosition(row, col);
-            var piece = board.getPiece(newPos);
-            if (piece != null && piece.getTeamColor() == color) {
-                continue;
-            }
-            moves.add(new ChessMove(position, newPos, null));
-        }
-        return moves;
+        return moveToPosition();
     }
 }

@@ -25,7 +25,7 @@ public abstract class MoveStrategy {
 
     public abstract Collection<ChessMove> validMoves();
 
-    Collection<ChessMove> MoveDownLine() {
+    Collection<ChessMove> moveDownLine() {
         List<ChessMove> moves = new ArrayList<>();
         for (var direction : directions) {
             var curPos = position;
@@ -47,6 +47,24 @@ public abstract class MoveStrategy {
                 curPos = newPos;
             }
 
+        }
+        return moves;
+    }
+
+    Collection<ChessMove> moveToPosition () {
+        List<ChessMove> moves = new ArrayList<>();
+        for (var direction : directions) {
+            var row = position.getRow() + direction[0];
+            var col = position.getColumn() + direction[1];
+            if (outsideBounds(row, col)) {
+                continue;
+            }
+            var newPos = new ChessPosition(row, col);
+            var piece = board.getPiece(newPos);
+            if (piece != null && piece.getTeamColor() == color) {
+                continue;
+            }
+            moves.add(new ChessMove(position, newPos, null));
         }
         return moves;
     }
