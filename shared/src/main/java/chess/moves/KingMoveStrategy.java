@@ -9,22 +9,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class KnightMoveStrategy extends MoveStrategy {
+public class KingMoveStrategy extends MoveStrategy{
 
-    private static final int[][] directions = {
-            {2, 1},
-            {2, -1},
-            {1, -2},
-            {1, 2},
-            {-2, 1},
-            {-2, -1},
-            {-1, -2},
-            {-1, 2},
+    private static final int[][]directions = {
+            {1,1},
+            {-1, 1},
+            {-1, -1},
+            {1, -1},
+            {0,1},
+            {1, 0},
+            {-1, 0},
+            {0, -1}
     };
+
     private final ChessPosition position;
     private final ChessBoard board;
     private final ChessGame.TeamColor color;
-    public KnightMoveStrategy(ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
+
+    public KingMoveStrategy(ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
         super(directions, board, position, color);
         this.position = position;
         this.board = board;

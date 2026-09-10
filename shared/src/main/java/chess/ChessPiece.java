@@ -70,7 +70,7 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         MoveStrategy strategy = switch (type) {
-            case PieceType.KING -> throw new RuntimeException("Not implemented");
+            case PieceType.KING -> new KingMoveStrategy(board, myPosition, pieceColor);
             case PieceType.QUEEN -> new QueenMoveStrategy(board, myPosition, pieceColor);
             case PieceType.BISHOP -> new BishopMoveStrategy(board, myPosition, pieceColor);
             case PieceType.KNIGHT -> new KnightMoveStrategy(board, myPosition, pieceColor);
