@@ -39,7 +39,7 @@ public class KingMoveStrategy extends MoveStrategy{
         for (var direction : directions) {
             var row = position.getRow() + direction[0];
             var col = position.getColumn() + direction[1];
-            if (OutsideBounds(row, col)) {
+            if (outsideBounds(row, col)) {
                 continue;
             }
             var newPos = new ChessPosition(row, col);
