@@ -54,9 +54,11 @@ public class ChessBoard {
      */
     public void resetBoard() {
         board = new ChessPiece[8][8];
-        // setup black back
         for (int i = 0; i < 8; i ++){
-            addPiece();
+            addPiece(new ChessPosition(8, i + 1), new ChessPiece(ChessGame.TeamColor.BLACK, pieceSetup[i]));
+            addPiece(new ChessPosition(7, i + 1), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+            addPiece(new ChessPosition(1, i + 1), new ChessPiece(ChessGame.TeamColor.WHITE, pieceSetup[i]));
+            addPiece(new ChessPosition(2, i + 1), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
         }
     }
 
@@ -72,5 +74,30 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(board);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder returnString = new StringBuilder();
+        for (int i = board.length - 1; i >= 0; i--) {
+            var row = board[i];
+            for (var piece : row){
+                String pieceChar = piece == null ? " " : switch(piece.getPieceType()) {
+                    case ChessPiece.PieceType.KING -> "k";
+                    case ChessPiece.PieceType.QUEEN -> "q";
+                    case ChessPiece.PieceType.BISHOP -> "b";
+                    case ChessPiece.PieceType.KNIGHT -> "n";
+                    case ChessPiece.PieceType.ROOK -> "r";
+                    case ChessPiece.PieceType.PAWN -> "p";
+                };
+                if (piece != null && piece.getTeamColor() == ChessGame.TeamColor.BLACK){
+                    pieceChar = pieceChar.toUpperCase();
+                }
+                returnString.append("|").append(pieceChar);
+
+            }
+            returnString.append("|\n");
+        }
+        return returnString.toString();
     }
 }
