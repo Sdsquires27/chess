@@ -1,7 +1,5 @@
 package chess;
 
-import chess.moves.*;
-
 import java.util.Collection;
 import java.util.Objects;
 
@@ -69,15 +67,27 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        MoveStrategy strategy = switch (type) {
-            case PieceType.KING -> new KingMoveStrategy(board, myPosition, pieceColor);
-            case PieceType.QUEEN -> new QueenMoveStrategy(board, myPosition, pieceColor);
-            case PieceType.BISHOP -> new BishopMoveStrategy(board, myPosition, pieceColor);
-            case PieceType.KNIGHT -> new KnightMoveStrategy(board, myPosition, pieceColor);
-            case PieceType.ROOK -> new RookMoveStrategy(board, myPosition, pieceColor);
-            case PieceType.PAWN -> new PawnMoveStrategy(board, myPosition, pieceColor);
+        MoveStrategy rule = switch(type) {
+            case KING -> new MoveStrategy(false,
+                    new int[][] {{0, -1}, {0, 1}, {1, -1}, {1, 1}, {1, 0}, {-1, 0}, {-1, 1}, {-1, -1}},
+                    false);
+            case QUEEN -> new MoveStrategy(true,
+                    new int[][] {{0, -1}, {0, 1}, {1, -1}, {1, 1}, {1, 0}, {-1, 0}, {-1, 1}, {-1, -1}},
+                    false);
+            case BISHOP -> new MoveStrategy(true,
+                    new int[][] {{1, -1}, {1, 1}, {-1, 1}, {-1, -1}},
+                    false);
+            case KNIGHT -> new MoveStrategy(false,
+                    new int[][] {{2, -1}, {2, 1}, {-2, -1}, {-2, 1}, {1, 2}, {1, -2}, {-1, 2}, {-1, -2}},
+                    false);
+            case ROOK -> new MoveStrategy(true,
+                    new int[][] {{0, -1}, {0, 1}, {1, 0}, {-1, 0}},
+                    false);
+            case PAWN -> new MoveStrategy(false,
+                    null,
+                    true);
         };
-        return strategy.validMoves();
+        return rule.findMoves(myPosition, board, pieceColor);
     }
 }
 
