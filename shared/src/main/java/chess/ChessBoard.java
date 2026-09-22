@@ -37,6 +37,17 @@ public class ChessBoard {
         board[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
+    public void deletePiece(ChessPosition position){
+        board[position.getRow() - 1][position.getColumn() - 1] = null;
+    }
+
+    public void movePiece(ChessMove move){
+        // TODO: add piece promotion logic
+        var piece = getPiece(move.getStartPosition());
+        deletePiece(move.getStartPosition());
+        addPiece(move.getEndPosition(), piece);
+    }
+
     /**
      * Gets a chess piece on the chessboard
      *
