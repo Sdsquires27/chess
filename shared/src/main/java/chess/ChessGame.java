@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -63,7 +64,25 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        var piece = board.getPiece(startPosition);
+        if (piece == null) return null;
+        var curColor = piece.getTeamColor();
+        var pieceMoves = piece.pieceMoves(board, startPosition);
+        var possibleMoves = new ArrayList<ChessMove>();
+        var newBoard = new ChessBoard(board);
+        for (var move : pieceMoves){
+            newBoard.movePiece(move);
+            var enemyMoves = newBoard.allColorMoves(oppositeColor(curColor));
+            for (var enemyMove : enemyMoves){
+                if (enemyMove.getEndPosition().equals(board.kingPosition(curColor))) continue;
+                possibleMoves.add(move);
+            }
+        }
+        return possibleMoves;
+    }
+
+    private TeamColor oppositeColor(TeamColor color){
+        return color == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**
@@ -104,6 +123,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
+        if (isInCheck(teamColor)) return false;
         throw new RuntimeException("Not implemented");
     }
 

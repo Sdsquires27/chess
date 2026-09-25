@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -42,10 +44,38 @@ public class ChessBoard {
     }
 
     public void movePiece(ChessMove move){
-        // TODO: add piece promotion logic
-        var piece = getPiece(move.getStartPosition());
+        var promotionPiece = move.getPromotionPiece();
+        var curPiece = getPiece(move.getStartPosition());
+        var newPiece = promotionPiece == null ? curPiece :
+                new ChessPiece(curPiece.getTeamColor(), promotionPiece);
         deletePiece(move.getStartPosition());
-        addPiece(move.getEndPosition(), piece);
+        addPiece(move.getEndPosition(), newPiece);
+    }
+
+    public Collection<ChessMove> allColorMoves(ChessGame.TeamColor color){
+        var moves = new ArrayList<ChessMove>();
+        for (int i = 0; i < board.length; i ++){
+            for (int j = 0; j < board.length; j ++){
+                var piece = board[i][j];
+                if (piece != null && piece.getTeamColor() == color){
+                    moves.addAll(piece.pieceMoves(this, new ChessPosition(i + 1, j + 1)));
+                }
+            }
+        }
+        return moves;
+    }
+
+    public ChessPosition kingPosition(ChessGame.TeamColor color) {
+        for (int i = 0; i < board.length; i ++){
+            for (int j = 0; j < board.length; j ++){
+                var piece = board[i][j];
+                if (piece != null && piece.getTeamColor() == color &&
+                        piece.getPieceType() == ChessPiece.PieceType.KING){
+                    return new ChessPosition(i + 1, j + 1);
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -80,6 +110,10 @@ public class ChessBoard {
         }
         ChessBoard that = (ChessBoard) o;
         return Objects.deepEquals(board, that.board);
+    }
+
+    public ChessBoard(ChessBoard other) {
+        this.board = Arrays.copyOf(other.board, other.board.length);
     }
 
     @Override
