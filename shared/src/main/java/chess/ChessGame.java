@@ -69,14 +69,16 @@ public class ChessGame {
         var curColor = piece.getTeamColor();
         var pieceMoves = piece.pieceMoves(board, startPosition);
         var possibleMoves = new ArrayList<ChessMove>();
-        var newBoard = new ChessBoard(board);
+
+        movesLoop:
         for (var move : pieceMoves){
-            newBoard.movePiece(move);
+            var newBoard = board.boardAfterMove(move);
+            if (board == newBoard) System.out.println("Error!");
             var enemyMoves = newBoard.allColorMoves(oppositeColor(curColor));
             for (var enemyMove : enemyMoves){
-                if (enemyMove.getEndPosition().equals(board.kingPosition(curColor))) continue;
-                possibleMoves.add(move);
+                if (enemyMove.getEndPosition().equals(newBoard.kingPosition(curColor))) continue movesLoop;
             }
+            possibleMoves.add(move);
         }
         return possibleMoves;
     }

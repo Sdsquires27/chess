@@ -52,6 +52,12 @@ public class ChessBoard {
         addPiece(move.getEndPosition(), newPiece);
     }
 
+    public ChessBoard boardAfterMove(ChessMove move){
+        var newBoard = new ChessBoard(this);
+        newBoard.movePiece(move);
+        return newBoard;
+    }
+
     public Collection<ChessMove> allColorMoves(ChessGame.TeamColor color){
         var moves = new ArrayList<ChessMove>();
         for (int i = 0; i < board.length; i ++){
@@ -113,7 +119,15 @@ public class ChessBoard {
     }
 
     public ChessBoard(ChessBoard other) {
-        this.board = Arrays.copyOf(other.board, other.board.length);
+        this.board = new ChessPiece[8][8];
+        for (int i = 0; i < this.board.length; i ++){
+            var row = this.board[i];
+            for (int j = 0; j < row.length; j ++) {
+                var otherPiece = other.getPiece(new ChessPosition(i + 1, j + 1));
+                if (otherPiece == null) continue;
+                this.board[i][j] = new ChessPiece(otherPiece.getTeamColor(), otherPiece.getPieceType());
+            }
+        }
     }
 
     @Override
@@ -126,7 +140,8 @@ public class ChessBoard {
         StringBuilder returnString = new StringBuilder();
         for (int i = board.length - 1; i >= 0; i--) {
             var row = board[i];
-            for (var piece : row){
+            for (int j = row.length - 1; j >= 0; j --){
+                var piece = row[j];
                 String pieceChar = piece == null ? " " : switch(piece.getPieceType()) {
                     case ChessPiece.PieceType.KING -> "k";
                     case ChessPiece.PieceType.QUEEN -> "q";
