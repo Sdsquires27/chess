@@ -15,7 +15,9 @@ public class ChessGame {
     private ChessBoard board;
     private TeamColor teamTurn;
     public ChessGame() {
-
+        board = new ChessBoard();
+        board.resetBoard();
+        teamTurn = TeamColor.WHITE;
     }
 
     /**
@@ -73,11 +75,7 @@ public class ChessGame {
         movesLoop:
         for (var move : pieceMoves){
             var newBoard = board.boardAfterMove(move);
-            if (board == newBoard) System.out.println("Error!");
-            var enemyMoves = newBoard.allColorMoves(oppositeColor(curColor));
-            for (var enemyMove : enemyMoves){
-                if (enemyMove.getEndPosition().equals(newBoard.kingPosition(curColor))) continue movesLoop;
-            }
+            if (isInCheckHelper(newBoard, curColor)) continue;
             possibleMoves.add(move);
         }
         return possibleMoves;
@@ -102,7 +100,7 @@ public class ChessGame {
     private boolean isValidMove(ChessMove move) {
         var startPos = move.getStartPosition();
         var piece = board.getPiece(startPos);
-        if (piece == null || piece.getTeamColor() != teamTurn) return false;
+        if (piece == null) return false;
         var validMoves = validMoves(startPos);
         for (var validMove : validMoves) {
             if (validMove.equals(move)) return true;
@@ -117,7 +115,15 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isInCheckHelper(board, teamColor);
+    }
+
+    private boolean isInCheckHelper(ChessBoard board, TeamColor teamColor){
+        var enemyMoves = board.allColorMoves(oppositeColor(teamColor));
+        for (var enemyMove : enemyMoves){
+            if (enemyMove.getEndPosition().equals(board.kingPosition(teamColor))) return true;
+        }
+        return false;
     }
 
     /**
@@ -127,7 +133,16 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (!isInCheck(teamColor)) return false;
+        return teamHasNoMoves(teamColor);
+    }
+
+    private boolean teamHasNoMoves(TeamColor teamColor){
+        var moves = board.allColorMoves(teamColor);
+        for (var move : moves){
+            if (isValidMove(move)) return false;
+        }
+        return true;
     }
 
     /**
@@ -139,7 +154,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (isInCheck(teamColor)) return false;
-        throw new RuntimeException("Not implemented");
+        return teamHasNoMoves(teamColor);
     }
 
     /**
