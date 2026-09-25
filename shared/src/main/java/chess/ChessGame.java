@@ -1,7 +1,10 @@
 package chess;
 
+import jdk.jshell.spi.ExecutionControl;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -14,10 +17,13 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor teamTurn;
+    private HashMap<TeamColor, Boolean> canCastle;
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
         teamTurn = TeamColor.WHITE;
+        canCastle.put(TeamColor.WHITE, true);
+        canCastle.put(TeamColor.BLACK, true);
     }
 
     /**
@@ -72,14 +78,26 @@ public class ChessGame {
         var pieceMoves = piece.pieceMoves(board, startPosition);
         var possibleMoves = new ArrayList<ChessMove>();
 
-        movesLoop:
         for (var move : pieceMoves){
             var newBoard = board.boardAfterMove(move);
             if (isInCheckHelper(newBoard, curColor)) continue;
             possibleMoves.add(move);
         }
+
+        if(canCastle.get(teamTurn) && piece.getPieceType() == ChessPiece.PieceType.KING){
+            possibleMoves.addAll(castleMoves(startPosition));
+        }
+
         return possibleMoves;
     }
+
+
+    private Collection<ChessMove> castleMoves(ChessPosition kingPosition) {
+        // check right
+        var col = kingPosition.getColumn();
+        var row = kingPosition.getRow();
+        // check left
+        }
 
     private TeamColor oppositeColor(TeamColor color){
         return color == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
@@ -95,6 +113,9 @@ public class ChessGame {
         var piece = board.getPiece(move.getStartPosition());
         if (!isValidMove(move) || (piece != null && piece.getTeamColor() != teamTurn))throw new InvalidMoveException();
         board.movePiece(move);
+        if(piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
+            canCastle.replace(teamTurn, false);
+        }
         teamTurn = oppositeColor(teamTurn);
     }
 
