@@ -17,13 +17,13 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor teamTurn;
-    private HashMap<TeamColor, Boolean> canCastle;
+    private HashMap<TeamColor, Boolean[]> canCastle;
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
         teamTurn = TeamColor.WHITE;
-        canCastle.put(TeamColor.WHITE, true);
-        canCastle.put(TeamColor.BLACK, true);
+        canCastle.put(TeamColor.WHITE, new Boolean[] {true, true});
+        canCastle.put(TeamColor.BLACK, new Boolean[] {true, true});
     }
 
     /**
@@ -83,19 +83,27 @@ public class ChessGame {
             if (isInCheckHelper(newBoard, curColor)) continue;
             possibleMoves.add(move);
         }
-
-        if(canCastle.get(teamTurn) && piece.getPieceType() == ChessPiece.PieceType.KING){
-            possibleMoves.addAll(castleMoves(startPosition));
+        var curCanCastle = canCastle.get(teamTurn);
+        if((curCanCastle[0] || curCanCastle[1]) && piece.getPieceType() == ChessPiece.PieceType.KING){
+            possibleMoves.addAll(castleMoves(startPosition, curCanCastle));
         }
 
         return possibleMoves;
     }
 
 
-    private Collection<ChessMove> castleMoves(ChessPosition kingPosition) {
-        // check right
+    private Collection<ChessMove> castleMoves(ChessPosition kingPosition, Boolean[] curCanCastle) {
         var col = kingPosition.getColumn();
         var row = kingPosition.getRow();
+        // check right
+        if (curCanCastle[1]){
+            var rookPosition = new ChessPosition(row, col + 3);
+            var posRight = new ChessPosition(row, col + 1);
+            var posTwoRight = new ChessPosition(row, col + 2);
+            if (
+        }
+
+
         // check left
         }
 
@@ -112,9 +120,29 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         var piece = board.getPiece(move.getStartPosition());
         if (!isValidMove(move) || (piece != null && piece.getTeamColor() != teamTurn))throw new InvalidMoveException();
+
+        var capturedPiece = board.getPiece(move.getEndPosition());
+        if(capturedPiece != null && capturedPiece.getPieceType() == ChessPiece.PieceType.ROOK){
+            var otherCanCastle = canCastle.get(oppositeColor(teamTurn));
+            for (var ifCanCastle : otherCanCastle){
+                // check if position is equal to castling position.
+            }
+        }
         board.movePiece(move);
-        if(piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
-            canCastle.replace(teamTurn, false);
+        if(piece != null) {
+            switch (piece.getPieceType()){
+                case KING:
+                    canCastle.replace(teamTurn, new Boolean[] {false, false});
+                case ROOK:
+                    var curCanCastle = canCastle.get(teamTurn);
+                    switch (move.getStartPosition().getColumn()){
+                        case 1:
+                            curCanCastle[0] = false;
+                        case 8:
+                            curCanCastle[1] = false;
+                    }
+                    canCastle.replace(teamTurn, curCanCastle);
+            }
         }
         teamTurn = oppositeColor(teamTurn);
     }
