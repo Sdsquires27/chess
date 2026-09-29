@@ -132,7 +132,9 @@ public class ChessBoard {
             var row = this.board[i];
             for (int j = 0; j < row.length; j ++) {
                 var otherPiece = other.getPiece(new ChessPosition(i + 1, j + 1));
-                if (otherPiece == null) continue;
+                if (otherPiece == null) {
+                    continue;
+                }
                 this.board[i][j] = new ChessPiece(otherPiece.getTeamColor(), otherPiece.getPieceType());
             }
         }

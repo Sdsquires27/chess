@@ -84,7 +84,9 @@ public class MoveStrategy {
                 var newPiece = board.getPiece(newPos);
                 if (newPiece == null) {
                     moves.add(new ChessMove(pos, newPos, null));
-                    if (!movesInLine) break;
+                    if (!movesInLine) {
+                        break;
+                    }
                     newPos = new ChessPosition(newPos.getRow() + direction[0], newPos.getColumn() + direction[1]);
                     continue;
                 }

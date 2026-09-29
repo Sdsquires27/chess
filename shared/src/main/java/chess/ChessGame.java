@@ -78,14 +78,18 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         var piece = board.getPiece(startPosition);
-        if (piece == null) return null;
+        if (piece == null) {
+            return null;
+        }
         var curColor = piece.getTeamColor();
         var pieceMoves = piece.pieceMoves(board, startPosition);
         var possibleMoves = new ArrayList<ChessMove>();
 
         for (var move : pieceMoves){
             var newBoard = board.boardAfterMove(move);
-            if (isInCheckHelper(newBoard, curColor)) continue;
+            if (isInCheckHelper(newBoard, curColor)) {
+                continue;
+            }
             possibleMoves.add(move);
         }
 
@@ -97,7 +101,9 @@ public class ChessGame {
             var enPassantColor = board.getPiece(enPassant).getTeamColor();
             if (curColor != enPassantColor){
                 var possibleMove = enPassantMoves(startPosition, enPassant, curColor);
-                if (possibleMove != null) possibleMoves.add(possibleMove);
+                if (possibleMove != null) {
+                    possibleMoves.add(possibleMove);
+                };
             }
         }
 
@@ -176,7 +182,10 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         var startPos = move.getStartPosition();
         var piece = board.getPiece(startPos);
-        if (!isValidMove(move) || (piece != null && piece.getTeamColor() != teamTurn))throw new InvalidMoveException();
+        if (!isValidMove(move) || (piece != null && piece.getTeamColor() != teamTurn)) {
+            throw new InvalidMoveException();
+        }
+
         enPassant = null;
         teamTurn = oppositeColor(teamTurn);
 
@@ -217,10 +226,14 @@ public class ChessGame {
     private boolean isValidMove(ChessMove move) {
         var startPos = move.getStartPosition();
         var piece = board.getPiece(startPos);
-        if (piece == null) return false;
+        if (piece == null) {
+            return false;
+        }
         var validMoves = validMoves(startPos);
         for (var validMove : validMoves) {
-            if (validMove.equals(move)) return true;
+            if (validMove.equals(move)) {
+                return true;
+            }
         }
         return false;
     }
@@ -238,7 +251,9 @@ public class ChessGame {
     private boolean isInCheckHelper(ChessBoard board, TeamColor teamColor){
         var enemyMoves = board.allColorMoves(oppositeColor(teamColor));
         for (var enemyMove : enemyMoves){
-            if (enemyMove.getEndPosition().equals(board.kingPosition(teamColor))) return true;
+            if (enemyMove.getEndPosition().equals(board.kingPosition(teamColor))) {
+                return true;
+            }
         }
         return false;
     }
@@ -250,14 +265,18 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if (!isInCheck(teamColor)) return false;
+        if (!isInCheck(teamColor)) {
+            return false;
+        }
         return teamHasNoMoves(teamColor);
     }
 
     private boolean teamHasNoMoves(TeamColor teamColor){
         var moves = board.allColorMoves(teamColor);
         for (var move : moves){
-            if (isValidMove(move)) return false;
+            if (isValidMove(move)) {
+                return false;
+            }
         }
         return true;
     }
@@ -270,7 +289,9 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if (isInCheck(teamColor)) return false;
+        if (isInCheck(teamColor)) {
+            return false;
+        }
         return teamHasNoMoves(teamColor);
     }
 
