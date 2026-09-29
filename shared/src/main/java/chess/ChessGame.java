@@ -26,7 +26,7 @@ public class ChessGame {
         canCastle.put(new ChessPosition(1, 1), TeamColor.WHITE);
         canCastle.put(new ChessPosition(1, 8), TeamColor.WHITE);
         canCastle.put(new ChessPosition(8, 1), TeamColor.BLACK);
-        canCastle.put(new ChessPosition(8, 1), TeamColor.BLACK);
+        canCastle.put(new ChessPosition(8, 8), TeamColor.BLACK);
 
     }
 
@@ -88,7 +88,7 @@ public class ChessGame {
             possibleMoves.add(move);
         }
 
-        if(canCastle.containsValue(curColor)){
+        if(canCastle.containsValue(curColor) && piece.getPieceType() == ChessPiece.PieceType.KING){
             possibleMoves.addAll(castleMoves(startPosition, curColor));
         }
 
@@ -98,44 +98,50 @@ public class ChessGame {
 
     private Collection<ChessMove> castleMoves(ChessPosition kingPosition, TeamColor color) {
         var moves = new ArrayList<ChessMove>();
-        var col = kingPosition.getColumn();
-        var row = kingPosition.getRow();
-        outerLoop:
-        for (var pos : canCastle.keySet()){
-            if (canCastle.get(pos) == color){
-                var targetCol = pos.getColumn();
-                int increment = targetCol > col ? 1 : -1;
-                var newBoard = new ChessBoard(board);
-                ChessPosition finalKingPos = null;
-                if(isInCheckHelper(newBoard, color)){
-                    continue;
-                }
-                for (int i = col; i == targetCol - increment; i += increment){
-                    var curCol = col += increment;
-                    finalKingPos = new ChessPosition(row, curCol);
-                    if (board.getPiece(new ChessPosition(row, curCol)) == null){
-                        newBoard.movePiece(new ChessMove(kingPosition,
-                                new ChessPosition(row, curCol), null));
-                        if(isInCheckHelper(newBoard, color)){
-                            continue outerLoop;
-                        }
-                        continue;
-                    }
-                    continue outerLoop;
-                }
-                if (finalKingPos == null){
-                    continue;
-                }
-                newBoard.movePiece(new ChessMove(finalKingPos,
-                        new ChessPosition(row, finalKingPos.getColumn() + increment), null));
-                if(isInCheckHelper(newBoard, color)){
-                    continue;
-                }
-                moves.add(new ChessMove(kingPosition,
-                        new ChessPosition(row, col + (increment * 2)), null));
+
+        for (var castleInfo : canCastle.entrySet()) {
+            if (castleInfo.getValue() != color) {
+                continue;
+            }
+
+            var move = testCastle(kingPosition, color, castleInfo.getKey());
+            if (move != null) {
+                moves.add(move);
             }
         }
         return moves;
+    }
+
+    private ChessMove testCastle(ChessPosition kingPos, TeamColor color, ChessPosition targetPos){
+        int row = kingPos.getRow();
+        int kingCol = kingPos.getColumn();
+        int targetCol = targetPos.getColumn();
+        var newBoard = new ChessBoard(board);
+        var curPos = kingPos;
+        int increment = kingCol - targetCol > 0 ? -1 : 1;
+        var nextKingCol = kingCol + (increment * 2);
+
+        if (isInCheckHelper(newBoard, color)){
+            return null;
+        }
+
+        for (int curCol = kingCol + increment; curCol != nextKingCol + increment;  curCol += increment){
+            var nextPos = new ChessPosition(row, curCol);
+
+            if (newBoard.getPiece(nextPos) != null){
+                return null;
+            }
+
+            newBoard.movePiece(new ChessMove(curPos, nextPos, null));
+            if (isInCheckHelper(newBoard, color)){
+                return null;
+            }
+
+            curPos = nextPos;
+        }
+
+        return new ChessMove(kingPos, new ChessPosition(row, nextKingCol), null);
+
     }
 
     private TeamColor oppositeColor(TeamColor color){
@@ -152,18 +158,27 @@ public class ChessGame {
         var startPos = move.getStartPosition();
         var piece = board.getPiece(startPos);
         if (!isValidMove(move) || (piece != null && piece.getTeamColor() != teamTurn))throw new InvalidMoveException();
+        teamTurn = oppositeColor(teamTurn);
+        if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING){
+            var curCol = startPos.getColumn();
+            var targetCol = move.getEndPosition().getColumn();
+            var diff = curCol - targetCol;
+            if(diff > 1 || diff < - 1){
+                var origCol = diff < -1 ? 8 : 1;
+                var newCol = diff < -1 ? 6 : 4;
+                var row = startPos.getRow();
+                board.castlePiece(move, new ChessMove(new ChessPosition(row, origCol),
+                        new ChessPosition(row, newCol), null));
+                return;
 
-        board.movePiece(move);
+            }
+            canCastle.entrySet().removeIf(entry -> entry.getValue() == oppositeColor(teamTurn));
+        }
         canCastle.remove(startPos);
         canCastle.remove(move.getEndPosition());
-        if(piece != null && piece.getPieceType() == ChessPiece.PieceType.KING) {
-            for (var key : canCastle.keySet()){
-                if (canCastle.get(key) == teamTurn){
-                    canCastle.remove(key);
-                }
-            }
-        }
-        teamTurn = oppositeColor(teamTurn);
+
+        board.movePiece(move);
+
     }
 
     private boolean isValidMove(ChessMove move) {
@@ -233,6 +248,21 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         this.board = board;
+        var kingPositions = new ChessPosition[] {new ChessPosition(1, 5),
+                new ChessPosition(8, 5)};
+        var kingColors = new TeamColor[] {TeamColor.WHITE, TeamColor.BLACK};
+        for (int i = 0; i < kingPositions.length; i ++){
+            var curColor = kingColors[i];
+            var kingPiece = board.getPiece(kingPositions[i]);
+            if (kingPiece == null){
+                canCastle.entrySet().removeIf(entry -> entry.getValue() == curColor);
+                return;
+            }
+            if (kingPiece.getPieceType() != ChessPiece.PieceType.KING ||
+            kingPiece.getTeamColor() != curColor){
+                canCastle.entrySet().removeIf(entry -> entry.getValue() == curColor);
+            }
+        }
     }
 
     /**

@@ -52,6 +52,14 @@ public class ChessBoard {
         addPiece(move.getEndPosition(), newPiece);
     }
 
+    public void castlePiece(ChessMove kingMove, ChessMove rookMove){
+        for (var move : new ChessMove[] {kingMove, rookMove}){
+            var curPiece = getPiece(move.getStartPosition());
+            deletePiece(move.getStartPosition());
+            addPiece(move.getEndPosition(), curPiece);
+        }
+    }
+
     public ChessBoard boardAfterMove(ChessMove move){
         var newBoard = new ChessBoard(this);
         newBoard.movePiece(move);
