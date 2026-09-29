@@ -19,6 +19,7 @@ public class ChessGame {
     private ChessBoard board;
     private TeamColor teamTurn;
     private HashMap<ChessPosition, TeamColor> canCastle = new HashMap<ChessPosition, TeamColor>();
+    private ChessPosition enPassant = null;
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
@@ -92,7 +93,25 @@ public class ChessGame {
             possibleMoves.addAll(castleMoves(startPosition, curColor));
         }
 
+        if (enPassant != null && piece.getPieceType() == ChessPiece.PieceType.PAWN){
+            var enPassantColor = board.getPiece(enPassant).getTeamColor();
+            if (curColor != enPassantColor){
+                var possibleMove = enPassantMoves(startPosition, enPassant, curColor);
+                if (possibleMove != null) possibleMoves.add(possibleMove);
+            }
+        }
+
         return possibleMoves;
+    }
+
+    private ChessMove enPassantMoves(ChessPosition startPos, ChessPosition enPassantPos, TeamColor color){
+        var diff = startPos.getColumn() - enPassantPos.getColumn();
+        if (startPos.getRow() == enPassantPos.getRow() && (diff == 1 || diff == -1)){
+            var dir = color == TeamColor.WHITE ? 1 : -1;
+            return new ChessMove(startPos, new ChessPosition(startPos.getRow() + dir, enPassantPos.getColumn()),
+                    null);
+        }
+        return null;
     }
 
 
@@ -158,7 +177,9 @@ public class ChessGame {
         var startPos = move.getStartPosition();
         var piece = board.getPiece(startPos);
         if (!isValidMove(move) || (piece != null && piece.getTeamColor() != teamTurn))throw new InvalidMoveException();
+        enPassant = null;
         teamTurn = oppositeColor(teamTurn);
+
         if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING){
             var curCol = startPos.getColumn();
             var targetCol = move.getEndPosition().getColumn();
@@ -177,8 +198,20 @@ public class ChessGame {
         canCastle.remove(startPos);
         canCastle.remove(move.getEndPosition());
 
-        board.movePiece(move);
+        if (piece != null && piece.getPieceType() == ChessPiece.PieceType.PAWN){
+            var diff = startPos.getRow() - move.getEndPosition().getRow();
+            if (diff > 1 || diff < -1){
+                enPassant = move.getEndPosition();
+            }
+            if (startPos.getColumn() != move.getEndPosition().getColumn()){
+                if (board.getPiece(move.getEndPosition()) == null){
+                    board.deletePiece(new ChessPosition(move.getStartPosition().getRow(),
+                            move.getEndPosition().getColumn()));
+                }
+            }
+        }
 
+        board.movePiece(move);
     }
 
     private boolean isValidMove(ChessMove move) {
