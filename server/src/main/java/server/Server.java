@@ -50,7 +50,7 @@ public class Server {
     }
 
     private void clearDB(Context ctx) throws APIException {
-        throw new RuntimeException("not implemented");
+        
     }
 
     private void exceptionHandler(DataAccessException exception, Context ctx){
