@@ -1,7 +1,6 @@
 package dataaccess;
 
-import model.GameData;
-import model.UserData;
+import model.*;
 
 import java.util.Collection;
 
@@ -13,7 +12,7 @@ public interface DataAccess {
     public Collection<GameData> listGames() throws DataAccessException;
     public void deleteSession(String authToken) throws DataAccessException;
     public UserData findUser(String username, String password) throws DataAccessException;
-    public void createAuth(String authData) throws DataAccessException;
+    public void createAuth(AuthData authData) throws DataAccessException;
     public void createUser(UserData userData) throws DataAccessException;
     public void updateGame(int GameID, String game) throws DataAccessException;
 }

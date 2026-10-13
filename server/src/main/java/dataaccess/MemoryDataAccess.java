@@ -1,12 +1,14 @@
 package dataaccess;
 
-import model.GameData;
-import model.UserData;
+import model.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class MemoryDataAccess implements DataAccess {
+    private Map<String, UserData> users;
+    private Map<String, String> auth;
     @Override
     public void clearDB() throws DataAccessException {
 
@@ -39,17 +41,17 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public UserData findUser(String username, String password) throws DataAccessException {
-        return null;
+        return users.get(username);
     }
 
     @Override
-    public void createAuth(String authData) throws DataAccessException {
-
+    public void createAuth(AuthData authData) throws DataAccessException {
+        auth.put(authData.authToken(), authData.username());
     }
 
     @Override
     public void createUser(UserData userData) throws DataAccessException {
-
+        users.put(userData.username(), userData);
     }
 
     @Override

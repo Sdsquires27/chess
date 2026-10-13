@@ -1,14 +1,23 @@
 package server;
 
+import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
+import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
+import service.*;
 
 public class Server {
 
     private final Javalin javalin;
+    private final DataAccess dataAccess;
+    private final GameService gameService;
+    private final UserService userService;
 
     public Server() {
+        dataAccess = new MemoryDataAccess();
+        gameService = new GameService(dataAccess);
+        userService = new UserService(dataAccess);
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", this::register)
                 .post("/session", this::login)
@@ -50,7 +59,12 @@ public class Server {
     }
 
     private void clearDB(Context ctx) throws APIException {
-        
+        try {
+            gameService.clearDB();
+        }
+        catch (DataAccessException e) {
+            throw new APIException(e.getMessage());
+        }
     }
 
     private void exceptionHandler(DataAccessException exception, Context ctx){
