@@ -1,11 +1,13 @@
 package server;
 
+import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
 import service.*;
+import service.requests.*;
 
 public class Server {
 
@@ -35,7 +37,13 @@ public class Server {
     }
 
     private void register(Context ctx) throws APIException {
-        throw new RuntimeException("not implemented");
+        var header = ctx.headerMap();
+        try {
+            userService.RegisterUser(new RegisterRequest(
+                    header.get("username"), header.get("password"), header.get("email")));
+        } catch (InvalidInputException | AlreadyTakenException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void login(Context ctx) throws APIException {

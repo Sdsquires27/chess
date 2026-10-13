@@ -3,8 +3,10 @@ package service;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 
+import java.util.UUID;
+
 class AuthService {
-    private final DataAccess dataAccess;
+    final DataAccess dataAccess;
 
     public AuthService(DataAccess dataAccess) {
         this.dataAccess = dataAccess;
@@ -12,5 +14,9 @@ class AuthService {
 
     public void clearDB() throws DataAccessException {
         dataAccess.clearDB();
+    }
+
+    public static String generateToken() {
+        return UUID.randomUUID().toString();
     }
 }
