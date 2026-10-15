@@ -1,4 +1,39 @@
 package service;
 
-public class AuthServiceTests {
+import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
+import model.AuthData;
+import model.GameData;
+import model.UserData;
+import org.junit.jupiter.api.Test;
+import java.util.UUID;
+
+
+import java.util.Collection;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class AuthServiceTests {
+
+    @Test
+    void clearDB() {
+        var dataAccess = new FakeDataAccess();
+        var authService = new AuthService(dataAccess);
+        try {
+            authService.clearDB();
+            assert(dataAccess.calledMethod);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void generateToken() {
+        String token = AuthService.generateToken();
+
+        UUID parsed = assertDoesNotThrow(() -> UUID.fromString(token));
+
+        assertEquals(parsed.toString(), token);
+    }
 }
