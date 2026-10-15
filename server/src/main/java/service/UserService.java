@@ -6,6 +6,8 @@ import dataaccess.DataAccessException;
 import model.*;
 import service.requests.*;
 
+import java.util.Objects;
+
 public class UserService extends AuthService{
 
 
@@ -23,7 +25,9 @@ public class UserService extends AuthService{
             throw new AlreadyTakenException();
         }
         dataAccess.createUser(new UserData(request.username(), request.password(), request.email()));
-        dataAccess.createAuth(new AuthData(AuthService.generateToken(), request.username()));
+        var authData = new AuthData(AuthService.generateToken(), request.username());
+        dataAccess.createAuth(authData);
+        return authData;
     }
 
     public AuthData LoginUser(LoginRequest request){
@@ -35,6 +39,11 @@ public class UserService extends AuthService{
     }
 
     private boolean validateInput(RegisterRequest request){
+        for (var field : new String[] {request.email(), request.password(), request.username()}){
+            if (field == null || field.isEmpty()){
+                return false;
+            }
+        }
         return true;
     }
 

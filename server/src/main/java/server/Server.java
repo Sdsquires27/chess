@@ -9,6 +9,8 @@ import io.javalin.http.Context;
 import service.*;
 import service.requests.*;
 
+import java.util.Map;
+
 public class Server {
 
     private final Javalin javalin;
@@ -28,7 +30,10 @@ public class Server {
                 .post("/game", this::createGame)
                 .put("/game", this::joinGame)
                 .delete("/db", this::clearDB)
-                .exception(DataAccessException.class, this::exceptionHandler);
+                .exception(InvalidInputException.class, this::invalidInputExceptionHandler)
+                .exception(DataAccessException.class, this::dataAccessExceptionHandler)
+                .exception(AlreadyTakenException.class, this::alreadyTakenExceptionHandler);
+
     }
 
     public int run(int desiredPort) {
@@ -36,50 +41,68 @@ public class Server {
         return javalin.port();
     }
 
-    private void register(Context ctx) throws APIException {
-        var header = ctx.headerMap();
-        try {
-            userService.RegisterUser(new RegisterRequest(
-                    header.get("username"), header.get("password"), header.get("email")));
-        } catch (InvalidInputException | AlreadyTakenException | DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+    private void register(Context ctx) throws InvalidInputException,
+            DataAccessException, AlreadyTakenException {
+        var body = (Map<String, String>) getBodyObject(ctx, Map.class);
+        var authData = userService.RegisterUser(new RegisterRequest(
+                body.get("username"), body.get("password"), body.get("email")));
+        String registerReturn = new Gson().toJson(Map.of("username", authData.username(),
+        "authToken", authData.authToken()));
+        ctx.contentType("application/json");
+        ctx.result(registerReturn);
     }
 
-    private void login(Context ctx) throws APIException {
+    private void login(Context ctx) throws InvalidInputException, DataAccessException,
+            UnauthorizedException{
         throw new RuntimeException("not implemented");
     }
 
-    private void logout(Context ctx) throws APIException {
+    private void logout(Context ctx) throws DataAccessException {
         throw new RuntimeException("not implemented");
     }
 
-    private void listGames(Context ctx) throws APIException {
+    private void listGames(Context ctx) throws DataAccessException {
         throw new RuntimeException("not implemented");
     }
 
-    private void createGame(Context ctx) throws APIException {
+    private void createGame(Context ctx) throws DataAccessException {
         throw new RuntimeException("not implemented");
     }
 
-    private void joinGame(Context ctx) throws APIException {
+    private void joinGame(Context ctx) throws DataAccessException {
         throw new RuntimeException("not implemented");
     }
 
-    private void clearDB(Context ctx) throws APIException {
-        try {
-            gameService.clearDB();
-        }
-        catch (DataAccessException e) {
-            throw new APIException(e.getMessage());
-        }
+    private void clearDB(Context ctx) throws DataAccessException {
+        gameService.clearDB();
     }
 
-    private void exceptionHandler(DataAccessException exception, Context ctx){
-        throw new RuntimeException("not implemented");
+    private void invalidInputExceptionHandler(InvalidInputException exception, Context ctx){
+        ctx.contentType("application/json");
+        ctx.status(400).result(new Gson().toJson(Map.of("message", "Error: bad request")));
+    }
+
+    private void dataAccessExceptionHandler(DataAccessException exception, Context ctx){
+        ctx.contentType("application/json");
+        ctx.status(500).result(new Gson().toJson(Map.of("message", exception.getMessage())));
+    }
+
+    private void alreadyTakenExceptionHandler(AlreadyTakenException exception, Context ctx){
+        ctx.contentType("application/json");
+        ctx.status(403).result(new Gson().toJson(Map.of("message", "Error: already taken")));
     }
 
     public void stop() {
         javalin.stop();
+    }
+
+    private static <T> T getBodyObject(Context context, Class<T> tClass) {
+        var bodyObject = new Gson().fromJson(context.body(), tClass);
+
+        if (bodyObject == null) {
+            throw new RuntimeException("missing required body");
+        }
+
+        return bodyObject;
     }
 }
