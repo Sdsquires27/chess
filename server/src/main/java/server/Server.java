@@ -16,12 +16,14 @@ public class Server {
     private final Javalin javalin;
     private final DataAccess dataAccess;
     private final GameService gameService;
+    private final AuthService authService;
     private final UserService userService;
 
     public Server() {
         dataAccess = new MemoryDataAccess();
         gameService = new GameService(dataAccess);
         userService = new UserService(dataAccess);
+        authService = new AuthService(dataAccess);
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", this::register)
                 .post("/session", this::login)
@@ -74,7 +76,7 @@ public class Server {
     }
 
     private void clearDB(Context ctx) throws DataAccessException {
-        gameService.clearDB();
+        authService.clearDB();
     }
 
     private void invalidInputExceptionHandler(InvalidInputException exception, Context ctx){

@@ -5,11 +5,9 @@ import dataaccess.DataAccessException;
 
 import java.util.UUID;
 
-class AuthService {
-    final DataAccess dataAccess;
-
+public class AuthService extends ChessService {
     public AuthService(DataAccess dataAccess) {
-        this.dataAccess = dataAccess;
+        super(dataAccess);
     }
 
     public void clearDB() throws DataAccessException {

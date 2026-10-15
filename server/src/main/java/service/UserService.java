@@ -8,7 +8,7 @@ import service.requests.*;
 
 import java.util.Objects;
 
-public class UserService extends AuthService{
+public class UserService extends ChessService{
 
 
     public UserService(DataAccess dataAccess) {
