@@ -20,20 +20,14 @@ class AuthServiceTests {
     void clearDB() {
         var dataAccess = new FakeDataAccess();
         var authService = new AuthService(dataAccess);
-        try {
-            authService.clearDB();
-            assert(dataAccess.calledMethod);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        assertDoesNotThrow(authService::clearDB);
+        assert(dataAccess.calledMethod);
     }
 
     @Test
     void generateToken() {
         String token = AuthService.generateToken();
-
         UUID parsed = assertDoesNotThrow(() -> UUID.fromString(token));
-
         assertEquals(parsed.toString(), token);
     }
 }
