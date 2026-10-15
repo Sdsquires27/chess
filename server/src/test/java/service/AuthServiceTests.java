@@ -21,7 +21,7 @@ class AuthServiceTests {
         var dataAccess = new FakeDataAccess();
         var authService = new AuthService(dataAccess);
         assertDoesNotThrow(authService::clearDB);
-        assert(dataAccess.calledMethod);
+        assert(dataAccess.calledMethod.get("clearDB"));
     }
 
     @Test

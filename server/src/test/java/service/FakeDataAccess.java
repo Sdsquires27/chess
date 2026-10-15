@@ -7,21 +7,35 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class FakeDataAccess implements DataAccess {
-    public boolean calledMethod = false;
+    public Map<String, Boolean> calledMethod = new HashMap<>();
+    public UserData defaultUser = new UserData("RealUser", "password", "email");
+    public UserData userData;
+    public AuthData authData;
 
     @BeforeEach
     public void resetAccess() {
-        calledMethod = false;
+        userData = null;
+        authData = null;
+        calledMethod = Map.of("clearDB", false,
+        "authorized", false,
+                "createGame", false,
+                "findGame", false,
+                "listGames", false,
+                "deleteSession", false,
+                "findUser", false,
+                "createAuth", false,
+                "createUser", false,
+                "updateGame", false
+        );
     }
 
 
     @Override
     public void clearDB() throws DataAccessException {
-        calledMethod = true;
+        calledMethod.put("clearDB", true);
     }
 
     @Override
@@ -51,17 +65,23 @@ public class FakeDataAccess implements DataAccess {
 
     @Override
     public UserData findUser(String username, String password) throws DataAccessException {
+        calledMethod.put("findUser", true);
+        if (Objects.equals(username, defaultUser.username()) && Objects.equals(password, defaultUser.password())){
+            return new UserData(defaultUser.username(), defaultUser.password(), defaultUser.email());
+        }
         return null;
     }
 
     @Override
     public void createAuth(AuthData authData) throws DataAccessException {
-
+        calledMethod.put("createAuth", true);
+        this.authData = authData;
     }
 
     @Override
     public void createUser(UserData userData) throws DataAccessException {
-
+        calledMethod.put("createUser", true);
+        this.userData = userData;
     }
 
     @Override
