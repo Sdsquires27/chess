@@ -3,7 +3,7 @@ package service;
 import dataaccess.DataAccess;
 import model.UserData;
 import org.junit.jupiter.api.Test;
-import service.requests.RegisterRequest;
+import service.requests.*;
 
 import java.util.Objects;
 
@@ -37,6 +37,16 @@ class UserServiceTests {
 
     @Test
     void loginUser() {
+        assertThrows(InvalidInputException.class,
+                () -> userService.LoginUser(new LoginRequest("", "test")));
+        assertThrows(UnauthorizedException.class,
+                () -> userService.LoginUser(new LoginRequest("FakeUser", "Test")));
+        assertThrows(UnauthorizedException.class,
+                () -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(), "fake_password")));
+        assertDoesNotThrow(() -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(),
+                dataAccess.defaultUser.password())));
+        assert(dataAccess.calledMethod.get("createAuth"));
+        assert(dataAccess.calledMethod.get("findUser"));
     }
 
     @Test

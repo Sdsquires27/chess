@@ -2,10 +2,7 @@ package dataaccess;
 
 import model.*;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MemoryDataAccess implements DataAccess {
     private Map<String, UserData> users;
@@ -52,7 +49,11 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public UserData findUser(String username, String password) throws DataAccessException {
-        return users.get(username);
+        var user = users.get(username);
+        if (user == null || !Objects.equals(user.password(), password)) {
+            return null;
+        }
+        return user;
     }
 
     @Override

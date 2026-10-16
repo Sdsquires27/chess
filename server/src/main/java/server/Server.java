@@ -6,6 +6,7 @@ import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
+import model.AuthData;
 import service.*;
 import service.requests.*;
 
@@ -34,7 +35,8 @@ public class Server {
                 .delete("/db", this::clearDB)
                 .exception(InvalidInputException.class, this::invalidInputExceptionHandler)
                 .exception(DataAccessException.class, this::dataAccessExceptionHandler)
-                .exception(AlreadyTakenException.class, this::alreadyTakenExceptionHandler);
+                .exception(AlreadyTakenException.class, this::alreadyTakenExceptionHandler)
+                .exception(UnauthorizedException.class, this::unauthorizedExceptionHandler);
 
     }
 
@@ -48,15 +50,15 @@ public class Server {
         var body = (Map<String, String>) getBodyObject(ctx, Map.class);
         var authData = userService.RegisterUser(new RegisterRequest(
                 body.get("username"), body.get("password"), body.get("email")));
-        String registerReturn = new Gson().toJson(Map.of("username", authData.username(),
-        "authToken", authData.authToken()));
-        ctx.contentType("application/json");
-        ctx.result(registerReturn);
+        respondWithAuthData(authData, ctx);
     }
 
     private void login(Context ctx) throws InvalidInputException, DataAccessException,
             UnauthorizedException{
-        throw new RuntimeException("not implemented");
+        var body = (Map<String, String>) getBodyObject(ctx, Map.class);
+        var authData = userService.LoginUser(new LoginRequest(
+                body.get("username"), body.get("password")));
+        respondWithAuthData(authData, ctx);
     }
 
     private void logout(Context ctx) throws DataAccessException {
@@ -92,6 +94,18 @@ public class Server {
     private void alreadyTakenExceptionHandler(AlreadyTakenException exception, Context ctx){
         ctx.contentType("application/json");
         ctx.status(403).result(new Gson().toJson(Map.of("message", "Error: already taken")));
+    }
+
+    private void unauthorizedExceptionHandler(UnauthorizedException exception, Context ctx){
+        ctx.contentType("application/json");
+        ctx.status(401).result(new Gson().toJson(Map.of("message", "Error: Failed to authenticate user")));
+    }
+
+    private void respondWithAuthData(AuthData authData, Context ctx) {
+        String authReturn = new Gson().toJson(Map.of("username", authData.username(),
+                "authToken", authData.authToken()));
+        ctx.contentType("application/json");
+        ctx.result(authReturn);
     }
 
     public void stop() {
