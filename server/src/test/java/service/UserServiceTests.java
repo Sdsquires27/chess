@@ -2,9 +2,11 @@ package service;
 
 import dataaccess.DataAccess;
 import model.UserData;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.requests.*;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,6 +15,11 @@ class UserServiceTests {
 
     FakeDataAccess dataAccess = new FakeDataAccess();
     UserService userService = new UserService(dataAccess);
+
+    @BeforeEach
+    public void resetAccess() {
+        dataAccess.resetAccess();
+    }
 
     @Test
     void registerUser() {
@@ -30,9 +37,7 @@ class UserServiceTests {
         assertDoesNotThrow(() -> userService.RegisterUser(new RegisterRequest(
                 "newUser", "password", "email")));
         assert(Objects.equals(dataAccess.userData, newUser));
-        assert(dataAccess.calledMethod.get("findUser"));
-        assert(dataAccess.calledMethod.get("createUser"));
-        assert(dataAccess.calledMethod.get("createAuth"));
+        assertMethodsAccessed(new String[] {"createAuth", "findUser", "createUser"});
     }
 
     @Test
@@ -45,11 +50,30 @@ class UserServiceTests {
                 () -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(), "fake_password")));
         assertDoesNotThrow(() -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(),
                 dataAccess.defaultUser.password())));
-        assert(dataAccess.calledMethod.get("createAuth"));
-        assert(dataAccess.calledMethod.get("findUser"));
+        assertMethodsAccessed(new String[] {"createAuth", "findUser"});
     }
 
     @Test
     void logout() {
+        assertThrows(InvalidInputException.class,
+                () -> userService.LoginUser(new LoginRequest("", "test")));
+        assertThrows(UnauthorizedException.class,
+                () -> userService.LoginUser(new LoginRequest("FakeUser", "Test")));
+        assertThrows(UnauthorizedException.class,
+                () -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(), "fake_password")));
+        assertDoesNotThrow(() -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(),
+                dataAccess.defaultUser.password())));
+        assertMethodsAccessed(new String[] {"createAuth", "findUser"});
+    }
+
+    void assertMethodsAccessed(String[] methods) {
+        for (var method : dataAccess.methods) {
+            System.out.println(method);
+            if (Arrays.asList(methods).contains(method)) {
+                assert(dataAccess.calledMethod.get(method));
+                continue;
+            }
+            assert(!dataAccess.calledMethod.get(method));
+        }
     }
 }

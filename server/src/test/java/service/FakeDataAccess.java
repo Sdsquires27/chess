@@ -14,22 +14,18 @@ public class FakeDataAccess implements DataAccess {
     public UserData defaultUser = new UserData("RealUser", "password", "email");
     public UserData userData;
     public AuthData authData;
+    public String[] methods = new String[] {"clearDB", "authorized", "createGame", "findGame", "listGames",
+    "deleteSession", "findUser", "createAuth", "createUser", "updateGame"};
 
-    @BeforeEach
     public void resetAccess() {
         userData = null;
         authData = null;
-        calledMethod = Map.of("clearDB", false,
-        "authorized", false,
-                "createGame", false,
-                "findGame", false,
-                "listGames", false,
-                "deleteSession", false,
-                "findUser", false,
-                "createAuth", false,
-                "createUser", false,
-                "updateGame", false
-        );
+        calledMethod = new HashMap<>();
+        for (var method: methods) {
+            System.out.println("reset method: " + method);
+            calledMethod.put(method, false);
+        }
+        System.out.println(calledMethod);
     }
 
 
