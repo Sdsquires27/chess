@@ -33,10 +33,14 @@ public class Server {
                 .post("/game", this::createGame)
                 .put("/game", this::joinGame)
                 .delete("/db", this::clearDB)
-                .exception(InvalidInputException.class, this::invalidInputExceptionHandler)
-                .exception(DataAccessException.class, this::dataAccessExceptionHandler)
-                .exception(AlreadyTakenException.class, this::alreadyTakenExceptionHandler)
-                .exception(UnauthorizedException.class, this::unauthorizedExceptionHandler);
+                .exception(InvalidInputException.class,
+                        (exception, ctx) -> exceptionHandler(400, "bad request", ctx))
+                .exception(DataAccessException.class,
+                        (exception, ctx) -> exceptionHandler(500, exception.getMessage(), ctx))
+                .exception(AlreadyTakenException.class,
+                        (exception, ctx) -> exceptionHandler(403, "already taken", ctx))
+                .exception(UnauthorizedException.class,
+                        (exception, ctx) -> exceptionHandler(401, "failed to authenticate user", ctx));
 
     }
 
@@ -81,24 +85,9 @@ public class Server {
         authService.clearDB();
     }
 
-    private void invalidInputExceptionHandler(InvalidInputException exception, Context ctx){
+    private void exceptionHandler(int code, String message, Context ctx){
         ctx.contentType("application/json");
-        ctx.status(400).result(new Gson().toJson(Map.of("message", "Error: bad request")));
-    }
-
-    private void dataAccessExceptionHandler(DataAccessException exception, Context ctx){
-        ctx.contentType("application/json");
-        ctx.status(500).result(new Gson().toJson(Map.of("message", exception.getMessage())));
-    }
-
-    private void alreadyTakenExceptionHandler(AlreadyTakenException exception, Context ctx){
-        ctx.contentType("application/json");
-        ctx.status(403).result(new Gson().toJson(Map.of("message", "Error: already taken")));
-    }
-
-    private void unauthorizedExceptionHandler(UnauthorizedException exception, Context ctx){
-        ctx.contentType("application/json");
-        ctx.status(401).result(new Gson().toJson(Map.of("message", "Error: Failed to authenticate user")));
+        ctx.status(code).result(new Gson().toJson(Map.of("message", "Error: " + message)));
     }
 
     private void respondWithAuthData(AuthData authData, Context ctx) {
