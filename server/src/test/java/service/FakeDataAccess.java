@@ -21,9 +21,12 @@ public class FakeDataAccess implements DataAccess {
     public GameData game;
     public String[] methods = new String[] {"clearDB", "authorized", "createGame", "findGame", "listGames",
     "deleteSession", "findUser", "createAuth", "createUser", "updateGame"};
-    public GameData defaultGame = new GameData(1234, "whiteUser", "blackUser",
+    public GameData defaultWhiteGame = new GameData(1234, "whiteUser", null,
             "RealName", new ChessGame());
-    public List<GameData> gameList = List.of(defaultGame, new GameData(5678, "test",
+    public GameData defaultBlackGame = new GameData(5678, null, "blackUser",
+            "RealName", new ChessGame());
+    public List<GameData> gameList = List.of(defaultWhiteGame, defaultBlackGame,
+            new GameData(1010, "test",
             "test", "test", new ChessGame()));
 
     public void resetAccess() {
@@ -59,8 +62,11 @@ public class FakeDataAccess implements DataAccess {
     @Override
     public GameData findGame(int gameID) throws DataAccessException {
         calledMethod.put("findGame", true);
-        if (gameID == defaultGame.gameID()){
-            return defaultGame;
+        if (gameID == defaultWhiteGame.gameID()){
+            return defaultWhiteGame;
+        }
+        if (gameID == defaultBlackGame.gameID()){
+            return defaultBlackGame;
         }
         return null;
     }

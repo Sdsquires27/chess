@@ -1,5 +1,6 @@
 package service;
 
+import model.GameData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.requests.*;
@@ -38,5 +39,31 @@ public class GameServiceTests extends ServiceTests{
 
     @Test
     void joinGame() {
+        assertThrows(UnauthorizedException.class,
+                () -> gameService.joinGame(new JoinGameRequest("FakeAuth", "1234", "WHITE")));
+        assertThrows(InvalidInputException.class,
+                () -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth, "ID", "WHITE")));
+        assertThrows(InvalidInputException.class,
+                () -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth, "", "WHITE")));
+        assertThrows(InvalidInputException.class,
+                () -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth, "1234", "")));
+        assertThrows(InvalidInputException.class,
+                () -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth, "1234", "")));
+        assertThrows(InvalidInputException.class,
+                () -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth, "", "WHITE")));
+        assertThrows(InvalidInputException.class,
+                () -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth, "1234", "WH!TE")));
+        assertThrows(AlreadyTakenException.class,
+                () -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth,
+                        String.valueOf(dataAccess.defaultWhiteGame.gameID()), "WHITE")));
+        assertThrows(AlreadyTakenException.class,
+                () -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth,
+                        String.valueOf(dataAccess.defaultBlackGame.gameID()), "BLACK")));
+        assertDoesNotThrow(() -> gameService.joinGame(new JoinGameRequest(dataAccess.defaultAuth,
+                String.valueOf(dataAccess.defaultBlackGame.gameID()), "WHITE")));
+        assertEquals(dataAccess.game, new GameData(dataAccess.defaultBlackGame.gameID(), dataAccess.defaultUser.username(),
+                dataAccess.defaultBlackGame.blackUsername(), dataAccess.defaultBlackGame.gameName(),
+                dataAccess.defaultBlackGame.game()));
+        assertMethodsAccessed(new String[] {"findUser", "findGame", "updateGame"});
     }
 }

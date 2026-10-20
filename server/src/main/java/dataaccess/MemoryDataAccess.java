@@ -70,11 +70,12 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void updateGame(int gameID, String game) throws DataAccessException {
-        games.put(gameID, new Gson().fromJson(game, GameData.class));
+        var newGame = new Gson().fromJson(game, GameData.class);
+        games.put(gameID, newGame);
     }
 
     @Override
     public String findUser(String authToken) throws DataAccessException {
-        return "";
+        return auth.get(authToken);
     }
 }

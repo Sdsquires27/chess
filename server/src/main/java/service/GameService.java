@@ -42,18 +42,15 @@ public class GameService extends ChessService{
             UnauthorizedException, AlreadyTakenException{
         var playerColor = request.playerColor();
         if(invalidInput(new String[]{playerColor})){
-            System.out.println("Player color invalid: " + playerColor);
             throw new InvalidInputException();
         }
         if (!Objects.equals(playerColor, "WHITE") && !Objects.equals(playerColor, "BLACK")) {
-            System.out.println("Player color invalid: " + playerColor);
             throw new InvalidInputException();
         }
         int id;
         try {
             id = (int) Double.parseDouble(request.gameID());
         } catch (NumberFormatException e) {
-            System.out.println("id invalid: " + request.gameID() + " " + e.getMessage());
             throw new InvalidInputException();
         }
         var username = dataAccess.findUser(request.authToken());
@@ -66,7 +63,6 @@ public class GameService extends ChessService{
             if (game.blackUsername() != null){
                 throw new AlreadyTakenException();
             }
-            System.out.println("updating black username");
             newGame = new GameData(id, game.whiteUsername(), username, game.gameName(), game.game());
         }
         if (Objects.equals(playerColor, "WHITE")){
