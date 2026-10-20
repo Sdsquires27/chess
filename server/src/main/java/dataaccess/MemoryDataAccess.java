@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.*;
 
 import java.util.*;
@@ -7,7 +8,7 @@ import java.util.*;
 public class MemoryDataAccess implements DataAccess {
     private Map<String, UserData> users;
     private Map<String, String> auth;
-    private Map<String, GameData> games;
+    private Map<Integer, GameData> games;
 
     public MemoryDataAccess(){
         users = new HashMap<>();
@@ -28,8 +29,8 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void createGame(String gameName, String gameId) throws DataAccessException {
-        games.put(gameId, new GameData(gameId, null, null, gameName, null));
+    public void createGame(String gameName, int gameId) throws DataAccessException {
+        games.put(gameId, new GameData(gameId, null, null, gameName, new ChessGame()));
     }
 
     @Override

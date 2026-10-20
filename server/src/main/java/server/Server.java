@@ -73,13 +73,18 @@ public class Server {
 
     private void listGames(Context ctx) throws DataAccessException {
         var games = gameService.listGames(new AuthTokenRequest(ctx.header("authorization")));
-        String authReturn = new Gson().toJson(Map.of("games", games));
+        String response = new Gson().toJson(Map.of("games", games));
         ctx.contentType("application/json");
-        ctx.result(authReturn);
+        ctx.result(response);
     }
 
-    private void createGame(Context ctx) throws DataAccessException {
-        throw new RuntimeException("not implemented");
+    private void createGame(Context ctx) throws DataAccessException, InvalidInputException {
+        var body = (Map<String, String>) getBodyObject(ctx, Map.class);
+        var gameID = gameService.createGame(new CreateGameRequest(ctx.header("authorization"),
+                body.get("gameName")));
+        String response = new Gson().toJson(Map.of("gameID", gameID));
+        ctx.contentType("application/json");
+        ctx.result(response);
     }
 
     private void joinGame(Context ctx) throws DataAccessException {

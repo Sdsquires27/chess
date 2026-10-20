@@ -6,6 +6,7 @@ import model.*;
 import service.requests.*;
 
 import java.util.Collection;
+import java.util.Random;
 
 public class GameService extends ChessService{
 
@@ -20,9 +21,17 @@ public class GameService extends ChessService{
         return dataAccess.listGames();
     }
 
-    public String createGame(CreateGameRequest request) throws DataAccessException, InvalidInputException,
+    public int createGame(CreateGameRequest request) throws DataAccessException, InvalidInputException,
             UnauthorizedException{
-        throw new RuntimeException("Not implemented");
+        if (invalidInput(new String[] {request.gameName()})) {
+            throw new InvalidInputException();
+        }
+        if (!dataAccess.authorized(request.authToken())) {
+            throw new UnauthorizedException();
+        }
+        int id = new Random().nextInt();
+        dataAccess.createGame(request.gameName(), id);
+        return id;
     }
 
     public void joinGame(JoinGameRequest request) throws DataAccessException, InvalidInputException,

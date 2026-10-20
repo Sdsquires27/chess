@@ -2,7 +2,7 @@ package service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import service.requests.AuthTokenRequest;
+import service.requests.*;
 
 import java.util.Objects;
 
@@ -23,6 +23,17 @@ public class GameServiceTests extends ServiceTests{
 
     @Test
     void createGame() {
+        assertThrows(UnauthorizedException.class,
+                () -> gameService.createGame(new CreateGameRequest("FakeAuth", "TestGame")));
+        assertThrows(InvalidInputException.class,
+                () -> gameService.createGame(new CreateGameRequest(dataAccess.defaultAuth, "")));
+        assertThrows(InvalidInputException.class,
+                () -> gameService.createGame(new CreateGameRequest(dataAccess.defaultAuth, null)));
+        var id = assertDoesNotThrow(() -> gameService.createGame(new CreateGameRequest(dataAccess.defaultAuth,
+                "NewGame")));
+        assertEquals(id, dataAccess.game.gameID());
+        assertEquals("NewGame", dataAccess.game.gameName());
+        assertMethodsAccessed(new String[] {"authorized", "createGame"});
     }
 
     @Test

@@ -17,16 +17,18 @@ public class FakeDataAccess implements DataAccess {
     public UserData userData;
     public AuthData authData;
     public String authToken;
+    public GameData game;
     public String[] methods = new String[] {"clearDB", "authorized", "createGame", "findGame", "listGames",
     "deleteSession", "findUser", "createAuth", "createUser", "updateGame"};
-    public GameData defaultGame = new GameData("RealGame", "whiteUser", "blackUser",
+    public GameData defaultGame = new GameData(1234, "whiteUser", "blackUser",
             "RealName", new ChessGame());
-    public List<GameData> gameList = List.of(defaultGame, new GameData("test", "test",
+    public List<GameData> gameList = List.of(defaultGame, new GameData(5678, "test",
             "test", "test", new ChessGame()));
 
     public void resetAccess() {
         userData = null;
         authData = null;
+        game = null;
         authToken = null;
         calledMethod = new HashMap<>();
         for (var method: methods) {
@@ -47,7 +49,9 @@ public class FakeDataAccess implements DataAccess {
     }
 
     @Override
-    public void createGame(String gameName, String gameID) throws DataAccessException {
+    public void createGame(String gameName, int gameID) throws DataAccessException {
+        calledMethod.put("createGame", true);
+        game = new GameData(gameID, "", "", gameName, null);
 
     }
 

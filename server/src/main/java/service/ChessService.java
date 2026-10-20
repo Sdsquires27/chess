@@ -8,5 +8,14 @@ public abstract class ChessService {
 
     public ChessService(DataAccess dataAccess) {
     this.dataAccess = dataAccess;
-}
+    }
+
+    boolean invalidInput(String[] request){
+        for (var field : request){
+            if (field == null || field.isEmpty()){
+                return true;
+            }
+        }
+        return false;
+    }
 }

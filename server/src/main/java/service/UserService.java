@@ -50,12 +50,5 @@ public class UserService extends ChessService{
         dataAccess.deleteSession(request.authToken());
     }
 
-    private boolean invalidInput(String[] request){
-        for (var field : request){
-            if (field == null || field.isEmpty()){
-                return true;
-            }
-        }
-        return false;
-    }
+
 }
