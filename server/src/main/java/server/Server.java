@@ -65,8 +65,10 @@ public class Server {
         respondWithAuthData(authData, ctx);
     }
 
-    private void logout(Context ctx) throws DataAccessException {
-        throw new RuntimeException("not implemented");
+    private void logout(Context ctx) throws DataAccessException, UnauthorizedException {
+       userService.Logout(new AuthTokenRequest(ctx.header("authorization")));
+        ctx.contentType("application/json");
+        ctx.result();
     }
 
     private void listGames(Context ctx) throws DataAccessException {
