@@ -1,13 +1,8 @@
 package service;
 
-import dataaccess.DataAccess;
 import model.UserData;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.requests.*;
-
-import java.util.Arrays;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,16 +14,16 @@ class UserServiceTests extends ServiceTests{
     void registerUser() {
         UserData newUser = new UserData("newUser", "password", "email");
         assertThrows(InvalidInputException.class,
-                () -> userService.RegisterUser(new RegisterRequest(null, "test", "test")));
+                () -> userService.registerUser(new RegisterRequest(null, "test", "test")));
         assertThrows(InvalidInputException.class,
-                () -> userService.RegisterUser(new RegisterRequest("", "test", "test")));
+                () -> userService.registerUser(new RegisterRequest("", "test", "test")));
         assertThrows(AlreadyTakenException.class,
-                () -> userService.RegisterUser(new RegisterRequest(
+                () -> userService.registerUser(new RegisterRequest(
                         dataAccess.defaultUser.username(),
                         dataAccess.defaultUser.password(),
                         dataAccess.defaultUser.email()
                 )));
-        assertDoesNotThrow(() -> userService.RegisterUser(new RegisterRequest(
+        assertDoesNotThrow(() -> userService.registerUser(new RegisterRequest(
                 "newUser", "password", "email")));
         assertEquals(dataAccess.userData, newUser);
         assertMethodsAccessed(new String[] {"createAuth", "findUser", "createUser"});
@@ -50,8 +45,8 @@ class UserServiceTests extends ServiceTests{
     @Test
     void logout() {
         assertThrows(UnauthorizedException.class,
-                () -> userService.Logout(new AuthTokenRequest("FakeAuth")));
-        assertDoesNotThrow(() -> userService.Logout(new AuthTokenRequest(dataAccess.defaultAuth)));
+                () -> userService.logout(new AuthTokenRequest("FakeAuth")));
+        assertDoesNotThrow(() -> userService.logout(new AuthTokenRequest(dataAccess.defaultAuth)));
         assertMethodsAccessed(new String[] {"deleteSession", "authorized"});
         assertEquals(dataAccess.defaultAuth, dataAccess.authToken);
     }

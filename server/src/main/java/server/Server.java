@@ -52,7 +52,7 @@ public class Server {
     private void register(Context ctx) throws InvalidInputException,
             DataAccessException, AlreadyTakenException {
         var body = (Map<String, String>) getBodyObject(ctx, Map.class);
-        var authData = userService.RegisterUser(new RegisterRequest(
+        var authData = userService.registerUser(new RegisterRequest(
                 body.get("username"), body.get("password"), body.get("email")));
         respondWithAuthData(authData, ctx);
     }
@@ -66,7 +66,7 @@ public class Server {
     }
 
     private void logout(Context ctx) throws DataAccessException, UnauthorizedException {
-       userService.Logout(new AuthTokenRequest(ctx.header("authorization")));
+       userService.logout(new AuthTokenRequest(ctx.header("authorization")));
         ctx.contentType("application/json");
         ctx.result();
     }

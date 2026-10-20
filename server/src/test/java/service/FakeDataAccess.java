@@ -105,7 +105,7 @@ public class FakeDataAccess implements DataAccess {
     }
 
     @Override
-    public void updateGame(int GameID, String game) throws DataAccessException {
+    public void updateGame(int gameID, String game) throws DataAccessException {
         calledMethod.put("updateGame", true);
         this.game = new Gson().fromJson(game, GameData.class);
     }

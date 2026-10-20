@@ -12,7 +12,7 @@ public class UserService extends ChessService{
         super(dataAccess);
     }
 
-    public AuthData RegisterUser(RegisterRequest request) throws InvalidInputException, DataAccessException,
+    public AuthData registerUser(RegisterRequest request) throws InvalidInputException, DataAccessException,
             AlreadyTakenException{
         if (invalidInput(new String[]{request.username(), request.password(), request.email()})){
             throw new InvalidInputException();
@@ -43,7 +43,7 @@ public class UserService extends ChessService{
         return authData;
     }
 
-    public void Logout(AuthTokenRequest request) throws DataAccessException, UnauthorizedException{
+    public void logout(AuthTokenRequest request) throws DataAccessException, UnauthorizedException{
         if (!dataAccess.authorized(request.authToken())) {
             throw new UnauthorizedException();
         }
