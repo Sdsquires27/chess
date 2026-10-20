@@ -1,6 +1,7 @@
 package dataaccess;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import model.*;
 
 import java.util.*;
@@ -34,7 +35,7 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData findGame(String gameID) throws DataAccessException {
+    public GameData findGame(int gameID) throws DataAccessException {
         return games.get(gameID);
     }
 
@@ -68,7 +69,12 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void updateGame(int GameID, String game) throws DataAccessException {
+    public void updateGame(int gameID, String game) throws DataAccessException {
+        games.put(gameID, new Gson().fromJson(game, GameData.class));
+    }
 
+    @Override
+    public String findUser(String authToken) throws DataAccessException {
+        return "";
     }
 }

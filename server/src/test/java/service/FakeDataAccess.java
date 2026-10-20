@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.AuthData;
@@ -56,7 +57,11 @@ public class FakeDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData findGame(String gameID) throws DataAccessException {
+    public GameData findGame(int gameID) throws DataAccessException {
+        calledMethod.put("findGame", true);
+        if (gameID == defaultGame.gameID()){
+            return defaultGame;
+        }
         return null;
     }
 
@@ -95,6 +100,16 @@ public class FakeDataAccess implements DataAccess {
 
     @Override
     public void updateGame(int GameID, String game) throws DataAccessException {
+        calledMethod.put("updateGame", true);
+        this.game = new Gson().fromJson(game, GameData.class);
+    }
 
+    @Override
+    public String findUser(String authToken) throws DataAccessException {
+        calledMethod.put("findUser", true);
+        if (Objects.equals(authToken, defaultAuth)) {
+            return defaultUser.username();
+        }
+        return null;
     }
 }

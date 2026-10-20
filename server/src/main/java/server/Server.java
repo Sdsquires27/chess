@@ -87,8 +87,13 @@ public class Server {
         ctx.result(response);
     }
 
-    private void joinGame(Context ctx) throws DataAccessException {
-        throw new RuntimeException("not implemented");
+    private void joinGame(Context ctx) throws DataAccessException, InvalidInputException, AlreadyTakenException,
+            UnauthorizedException{
+        var body = (Map<String, Object>) getBodyObject(ctx, Map.class);
+        gameService.joinGame(new JoinGameRequest(ctx.header("authorization"), String.valueOf(body.get("gameID")),
+                String.valueOf(body.get("playerColor"))));
+        ctx.contentType("application/json");
+        ctx.result();
     }
 
     private void clearDB(Context ctx) throws DataAccessException {

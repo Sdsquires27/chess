@@ -18,7 +18,7 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor teamTurn;
-    private HashMap<ChessPosition, TeamColor> canCastle = new HashMap<ChessPosition, TeamColor>();
+    private HashMap<ChessPosition, TeamColor> canCastle = new HashMap<>();
     private ChessPosition enPassant = null;
     public ChessGame() {
         board = new ChessBoard();
