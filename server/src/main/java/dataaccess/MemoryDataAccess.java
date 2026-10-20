@@ -23,8 +23,8 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public String authorized(String authToken) throws DataAccessException {
-        return auth.get(authToken);
+    public Boolean authorized(String authToken) throws DataAccessException {
+        return auth.containsKey(authToken);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
-        return List.of();
+        return games.values();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.AuthData;
@@ -18,6 +19,10 @@ public class FakeDataAccess implements DataAccess {
     public String authToken;
     public String[] methods = new String[] {"clearDB", "authorized", "createGame", "findGame", "listGames",
     "deleteSession", "findUser", "createAuth", "createUser", "updateGame"};
+    public GameData defaultGame = new GameData("RealGame", "whiteUser", "blackUser",
+            "RealName", new ChessGame());
+    public List<GameData> gameList = List.of(defaultGame, new GameData("test", "test",
+            "test", "test", new ChessGame()));
 
     public void resetAccess() {
         userData = null;
@@ -36,12 +41,9 @@ public class FakeDataAccess implements DataAccess {
     }
 
     @Override
-    public String authorized(String authToken) throws DataAccessException {
+    public Boolean authorized(String authToken) throws DataAccessException {
         calledMethod.put("authorized", true);
-        if (Objects.equals(authToken, defaultAuth)){
-            return defaultUser.username();
-        }
-        return null;
+        return Objects.equals(authToken, defaultAuth);
     }
 
     @Override
@@ -56,7 +58,8 @@ public class FakeDataAccess implements DataAccess {
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
-        return List.of();
+        calledMethod.put("listGames", true);
+        return gameList;
     }
 
     @Override

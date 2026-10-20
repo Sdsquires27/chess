@@ -11,15 +11,9 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserServiceTests {
+class UserServiceTests extends ServiceTests{
 
-    FakeDataAccess dataAccess = new FakeDataAccess();
     UserService userService = new UserService(dataAccess);
-
-    @BeforeEach
-    public void resetAccess() {
-        dataAccess.resetAccess();
-    }
 
     @Test
     void registerUser() {
@@ -36,7 +30,7 @@ class UserServiceTests {
                 )));
         assertDoesNotThrow(() -> userService.RegisterUser(new RegisterRequest(
                 "newUser", "password", "email")));
-        assert(Objects.equals(dataAccess.userData, newUser));
+        assertEquals(dataAccess.userData, newUser);
         assertMethodsAccessed(new String[] {"createAuth", "findUser", "createUser"});
     }
 
@@ -59,16 +53,8 @@ class UserServiceTests {
                 () -> userService.Logout(new AuthTokenRequest("FakeAuth")));
         assertDoesNotThrow(() -> userService.Logout(new AuthTokenRequest(dataAccess.defaultAuth)));
         assertMethodsAccessed(new String[] {"deleteSession", "authorized"});
-        assert(Objects.equals(dataAccess.defaultAuth, dataAccess.authToken));
+        assertEquals(dataAccess.defaultAuth, dataAccess.authToken);
     }
 
-    void assertMethodsAccessed(String[] methods) {
-        for (var method : dataAccess.methods) {
-            if (Arrays.asList(methods).contains(method)) {
-                assert(dataAccess.calledMethod.get(method));
-                continue;
-            }
-            assert(!dataAccess.calledMethod.get(method));
-        }
-    }
+
 }

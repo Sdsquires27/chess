@@ -44,8 +44,7 @@ public class UserService extends ChessService{
     }
 
     public void Logout(AuthTokenRequest request) throws DataAccessException, UnauthorizedException{
-        var user = dataAccess.authorized(request.authToken());
-        if (user == null) {
+        if (!dataAccess.authorized(request.authToken())) {
             throw new UnauthorizedException();
         }
         dataAccess.deleteSession(request.authToken());

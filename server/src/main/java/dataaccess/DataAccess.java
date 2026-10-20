@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface DataAccess {
     public void clearDB() throws DataAccessException;
-    public String authorized(String authToken) throws DataAccessException;
+    public Boolean authorized(String authToken) throws DataAccessException;
     public void createGame(String gameName, String gameID) throws DataAccessException;
     public GameData findGame(String gameID) throws DataAccessException;
     public Collection<GameData> listGames() throws DataAccessException;
