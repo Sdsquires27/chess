@@ -12,20 +12,21 @@ import java.util.*;
 public class FakeDataAccess implements DataAccess {
     public Map<String, Boolean> calledMethod = new HashMap<>();
     public UserData defaultUser = new UserData("RealUser", "password", "email");
+    public String defaultAuth = "AuthToken";
     public UserData userData;
     public AuthData authData;
+    public String authToken;
     public String[] methods = new String[] {"clearDB", "authorized", "createGame", "findGame", "listGames",
     "deleteSession", "findUser", "createAuth", "createUser", "updateGame"};
 
     public void resetAccess() {
         userData = null;
         authData = null;
+        authToken = null;
         calledMethod = new HashMap<>();
         for (var method: methods) {
-            System.out.println("reset method: " + method);
             calledMethod.put(method, false);
         }
-        System.out.println(calledMethod);
     }
 
 
@@ -36,7 +37,11 @@ public class FakeDataAccess implements DataAccess {
 
     @Override
     public String authorized(String authToken) throws DataAccessException {
-        return "";
+        calledMethod.put("authorized", true);
+        if (Objects.equals(authToken, defaultAuth)){
+            return defaultUser.username();
+        }
+        return null;
     }
 
     @Override
@@ -56,7 +61,8 @@ public class FakeDataAccess implements DataAccess {
 
     @Override
     public void deleteSession(String authToken) throws DataAccessException {
-
+        calledMethod.put("deleteSession", true);
+        this.authToken = authToken;
     }
 
     @Override

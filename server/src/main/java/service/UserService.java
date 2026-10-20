@@ -43,8 +43,12 @@ public class UserService extends ChessService{
         return authData;
     }
 
-    public void Logout(AuthTokenRequest request){
-        throw new RuntimeException("Not implemented");
+    public void Logout(AuthTokenRequest request) throws DataAccessException, UnauthorizedException{
+        var user = dataAccess.authorized(request.authToken());
+        if (user == null) {
+            throw new UnauthorizedException();
+        }
+        dataAccess.deleteSession(request.authToken());
     }
 
     private boolean invalidInput(String[] request){

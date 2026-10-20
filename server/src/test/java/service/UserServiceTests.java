@@ -55,20 +55,15 @@ class UserServiceTests {
 
     @Test
     void logout() {
-        assertThrows(InvalidInputException.class,
-                () -> userService.LoginUser(new LoginRequest("", "test")));
         assertThrows(UnauthorizedException.class,
-                () -> userService.LoginUser(new LoginRequest("FakeUser", "Test")));
-        assertThrows(UnauthorizedException.class,
-                () -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(), "fake_password")));
-        assertDoesNotThrow(() -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(),
-                dataAccess.defaultUser.password())));
-        assertMethodsAccessed(new String[] {"createAuth", "findUser"});
+                () -> userService.Logout(new AuthTokenRequest("FakeAuth")));
+        assertDoesNotThrow(() -> userService.Logout(new AuthTokenRequest(dataAccess.defaultAuth)));
+        assertMethodsAccessed(new String[] {"deleteSession", "authorized"});
+        assert(Objects.equals(dataAccess.defaultAuth, dataAccess.authToken));
     }
 
     void assertMethodsAccessed(String[] methods) {
         for (var method : dataAccess.methods) {
-            System.out.println(method);
             if (Arrays.asList(methods).contains(method)) {
                 assert(dataAccess.calledMethod.get(method));
                 continue;
