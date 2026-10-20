@@ -32,12 +32,12 @@ class UserServiceTests extends ServiceTests{
     @Test
     void loginUser() {
         assertThrows(InvalidInputException.class,
-                () -> userService.LoginUser(new LoginRequest("", "test")));
+                () -> userService.loginUser(new LoginRequest("", "test")));
         assertThrows(UnauthorizedException.class,
-                () -> userService.LoginUser(new LoginRequest("FakeUser", "Test")));
+                () -> userService.loginUser(new LoginRequest("FakeUser", "Test")));
         assertThrows(UnauthorizedException.class,
-                () -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(), "fake_password")));
-        assertDoesNotThrow(() -> userService.LoginUser(new LoginRequest(dataAccess.defaultUser.username(),
+                () -> userService.loginUser(new LoginRequest(dataAccess.defaultUser.username(), "fake_password")));
+        assertDoesNotThrow(() -> userService.loginUser(new LoginRequest(dataAccess.defaultUser.username(),
                 dataAccess.defaultUser.password())));
         assertMethodsAccessed(new String[] {"createAuth", "findUser"});
     }

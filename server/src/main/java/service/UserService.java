@@ -29,7 +29,7 @@ public class UserService extends ChessService{
         return authData;
     }
 
-    public AuthData LoginUser(LoginRequest request) throws InvalidInputException, DataAccessException,
+    public AuthData loginUser(LoginRequest request) throws InvalidInputException, DataAccessException,
             UnauthorizedException{
         if(invalidInput(new String[]{request.username(), request.password()})) {
             throw new InvalidInputException();

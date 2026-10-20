@@ -60,7 +60,7 @@ public class Server {
     private void login(Context ctx) throws InvalidInputException, DataAccessException,
             UnauthorizedException{
         var body = (Map<String, String>) getBodyObject(ctx, Map.class);
-        var authData = userService.LoginUser(new LoginRequest(
+        var authData = userService.loginUser(new LoginRequest(
                 body.get("username"), body.get("password")));
         respondWithAuthData(authData, ctx);
     }
