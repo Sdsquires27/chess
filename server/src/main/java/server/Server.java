@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
+import dataaccess.SQLDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.AuthData;
@@ -15,13 +16,17 @@ import java.util.Map;
 public class Server {
 
     private final Javalin javalin;
-    private final DataAccess dataAccess;
     private final GameService gameService;
     private final AuthService authService;
     private final UserService userService;
 
     public Server() {
-        dataAccess = new MemoryDataAccess();
+        DataAccess dataAccess;
+        try {
+            dataAccess = new SQLDataAccess();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database could not be configured: " + e.getMessage());
+        }
         gameService = new GameService(dataAccess);
         userService = new UserService(dataAccess);
         authService = new AuthService(dataAccess);
