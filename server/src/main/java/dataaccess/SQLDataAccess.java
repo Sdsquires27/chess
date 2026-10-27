@@ -19,20 +19,20 @@ public class SQLDataAccess implements DataAccess{
                     CREATE TABLE IF NOT EXISTS %s (
                         authToken VARCHAR(255) NOT NULL,
                         username VARCHAR(255) NOT NULL
-                    )""", authTableName);
+                    );""", authTableName);
             var createUserTable = String.format("""
                     CREATE TABLE IF NOT EXISTS %s (
                         username VARCHAR(255) NOT NULL,
                         password_hash VARCHAR(255) NOT NULL,
                         email VARCHAR(255) NOT NULL
-                    )""", userTableName);
+                    );""", userTableName);
             var createGameTable = String.format("""
                     CREATE TABLE IF NOT EXISTS %s (
                         authToken INT NOT NULL,
                         whiteUsername VARCHAR(255) NOT NULL,
                         blackUsername VARCHAR(255) NOT NULL,
                         chessGame VARCHAR(255) NOT NULL
-                    )""", gameTableName);
+                    );""", gameTableName);
             for (var statement : new String[] {createAuthTable, createUserTable, createGameTable}){
                 try (var createTableStatement = conn.prepareStatement(statement)) {
                     createTableStatement.executeUpdate();
@@ -65,7 +65,7 @@ public class SQLDataAccess implements DataAccess{
                         SELECT 1
                         FROM %s
                         WHERE authToken = ?
-                    )
+                    );
                     """, authTableName);
             try (var preparedStatement = conn.prepareStatement(statement)){
                 preparedStatement.setString(1, authToken);
@@ -73,9 +73,9 @@ public class SQLDataAccess implements DataAccess{
                     if (result.next()){
                         return result.getBoolean(1);
                     }
+                    return false;
                 }
             }
-            return false;
         } catch (Exception e) {
             throw new DataAccessException("Authorized failed");
         }
@@ -111,7 +111,13 @@ public class SQLDataAccess implements DataAccess{
     @Override
     public void deleteSession(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-
+            var statement = String.format("""
+                    DELETE FROM %s WHERE authToken=?;
+                    """, authTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.setString(1, authToken);
+                preparedStatement.executeUpdate();
+            }
         } catch (Exception e) {
             throw new DataAccessException("Delete session failed");
         }
@@ -120,7 +126,24 @@ public class SQLDataAccess implements DataAccess{
     @Override
     public UserData findUser(String username, String password) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            throw new RuntimeException("not implemented");
+            var statement = String.format("""
+                    SELECT username, password, email
+                    FROM %s
+                    WHERE username = ?
+                        AND password_hash = ?;
+                    """, userTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, password);
+                try (var result = preparedStatement.executeQuery()){
+                    if (result.next()) {
+                        return new UserData(result.getString("username"),
+                                result.getString("password"),
+                                result.getString("email"));
+                    }
+                    return null;
+                }
+            }
         } catch (Exception e) {
             throw new DataAccessException("Find user failed");
         }
@@ -129,7 +152,15 @@ public class SQLDataAccess implements DataAccess{
     @Override
     public void createAuth(AuthData authData) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            throw new RuntimeException("not implemented");
+            var statement = String.format("""
+                    INSERT INTO %s (authToken, username)
+                    VALUES (?, ?);
+                    """, authTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.setString(1, authData.authToken());
+                preparedStatement.setString(2, authData.username());
+                preparedStatement.executeUpdate();
+            }
         } catch (Exception e) {
             throw new DataAccessException("Clear database failed");
         }
