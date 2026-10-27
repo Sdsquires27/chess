@@ -47,12 +47,12 @@ public class SQLDataAccess implements DataAccess{
     public void clearDB() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             for (var tableName : new String[] {authTableName, gameTableName, userTableName}){
-                try (var preparedStatement = conn.prepareStatement("TRUNCATE TABLE ?")){
-                    preparedStatement.setString(1, tableName);
+                try (var preparedStatement = conn.prepareStatement(String.format("TRUNCATE TABLE %s;", tableName))){
                     preparedStatement.executeUpdate();
                 }
             }
         } catch (Exception e) {
+            System.out.println("ERROR: Clear database: " + e.getMessage());
             throw new DataAccessException("Clear database failed");
         }
     }
@@ -86,7 +86,7 @@ public class SQLDataAccess implements DataAccess{
         try (var conn = DatabaseManager.getConnection()) {
             throw new RuntimeException("not implemented");
         } catch (Exception e) {
-            throw new DataAccessException("Clear database failed");
+            throw new DataAccessException("Create game failed");
         }
     }
 
@@ -95,7 +95,7 @@ public class SQLDataAccess implements DataAccess{
         try (var conn = DatabaseManager.getConnection()) {
             throw new RuntimeException("not implemented");
         } catch (Exception e) {
-            throw new DataAccessException("Clear database failed");
+            throw new DataAccessException("Find game failed");
         }
     }
 
@@ -104,7 +104,7 @@ public class SQLDataAccess implements DataAccess{
         try (var conn = DatabaseManager.getConnection()) {
             throw new RuntimeException("not implemented");
         } catch (Exception e) {
-            throw new DataAccessException("Clear database failed");
+            throw new DataAccessException("List games failed");
         }
     }
 
@@ -127,7 +127,7 @@ public class SQLDataAccess implements DataAccess{
     public UserData findUser(String username, String password) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = String.format("""
-                    SELECT username, password, email
+                    SELECT username, password_hash, email
                     FROM %s
                     WHERE username = ?
                         AND password_hash = ?;
@@ -138,13 +138,14 @@ public class SQLDataAccess implements DataAccess{
                 try (var result = preparedStatement.executeQuery()){
                     if (result.next()) {
                         return new UserData(result.getString("username"),
-                                result.getString("password"),
+                                result.getString("password_hash"),
                                 result.getString("email"));
                     }
                     return null;
                 }
             }
         } catch (Exception e) {
+            System.out.println("ERROR: Find user: " + e.getMessage());
             throw new DataAccessException("Find user failed");
         }
     }
@@ -162,7 +163,7 @@ public class SQLDataAccess implements DataAccess{
                 preparedStatement.executeUpdate();
             }
         } catch (Exception e) {
-            throw new DataAccessException("Clear database failed");
+            throw new DataAccessException("Create auth failed");
         }
     }
 
@@ -170,7 +171,7 @@ public class SQLDataAccess implements DataAccess{
     public void createUser(UserData userData) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = String.format("""
-                    INSERT INTO %s (username, password, email)
+                    INSERT INTO %s (username, password_hash, email)
                     VALUES (?, ?, ?);
                     """, userTableName);
             try (var preparedStatement = conn.prepareStatement(statement)){
@@ -179,7 +180,7 @@ public class SQLDataAccess implements DataAccess{
                 preparedStatement.setString(3, userData.email());
                 preparedStatement.executeUpdate();
             }        } catch (Exception e) {
-            throw new DataAccessException("Clear database failed");
+            throw new DataAccessException("Create user failed");
         }
     }
 
@@ -188,7 +189,7 @@ public class SQLDataAccess implements DataAccess{
         try (var conn = DatabaseManager.getConnection()) {
             throw new RuntimeException("not implemented");
         } catch (Exception e) {
-            throw new DataAccessException("Clear database failed");
+            throw new DataAccessException("Update game failed");
         }
     }
 
@@ -210,7 +211,7 @@ public class SQLDataAccess implements DataAccess{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException("Clear database failed");
+            throw new DataAccessException("Find user by auth failed");
         }
     }
 }
