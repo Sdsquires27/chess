@@ -169,8 +169,16 @@ public class SQLDataAccess implements DataAccess{
     @Override
     public void createUser(UserData userData) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            throw new RuntimeException("not implemented");
-        } catch (Exception e) {
+            var statement = String.format("""
+                    INSERT INTO %s (username, password, email)
+                    VALUES (?, ?, ?);
+                    """, userTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.setString(1, userData.username());
+                preparedStatement.setString(2, userData.password());
+                preparedStatement.setString(3, userData.email());
+                preparedStatement.executeUpdate();
+            }        } catch (Exception e) {
             throw new DataAccessException("Clear database failed");
         }
     }
@@ -187,7 +195,20 @@ public class SQLDataAccess implements DataAccess{
     @Override
     public String findUser(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            throw new RuntimeException("not implemented");
+            var statement = String.format("""
+                    SELECT username
+                    FROM %s
+                    WHERE authToken = ?
+                    """, authTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.setString(1, authToken);
+                try (var result = preparedStatement.executeQuery()){
+                    if (result.next()) {
+                        return result.getString("username");
+                    }
+                    return null;
+                }
+            }
         } catch (Exception e) {
             throw new DataAccessException("Clear database failed");
         }
