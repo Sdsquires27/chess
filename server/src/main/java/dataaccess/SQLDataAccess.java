@@ -47,7 +47,7 @@ public class SQLDataAccess implements DataAccess{
     public void clearDB() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             for (var tableName : new String[] {authTableName, gameTableName, userTableName}){
-                try (var preparedStatement = conn.prepareStatement("DROP TABLE ?")){
+                try (var preparedStatement = conn.prepareStatement("TRUNCATE TABLE ?")){
                     preparedStatement.setString(1, tableName);
                     preparedStatement.executeUpdate();
                 }
