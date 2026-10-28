@@ -8,12 +8,15 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
+import org.mindrot.jbcrypt.BCrypt;
+import service.requests.AuthTokenRequest;
 
 import java.util.*;
 
 public class FakeDataAccess implements DataAccess {
     public Map<String, Boolean> calledMethod = new HashMap<>();
-    public UserData defaultUser = new UserData("RealUser", "password", "email");
+    public UserData defaultUser;
+    public String password = "password";
     public String defaultAuth = "AuthToken";
     public UserData userData;
     public AuthData authData;
@@ -35,6 +38,8 @@ public class FakeDataAccess implements DataAccess {
         game = null;
         authToken = null;
         calledMethod = new HashMap<>();
+        defaultUser =  new UserData("RealUser",
+                BCrypt.hashpw(password, BCrypt.gensalt()), "email");
         for (var method: methods) {
             calledMethod.put(method, false);
         }
@@ -47,9 +52,9 @@ public class FakeDataAccess implements DataAccess {
     }
 
     @Override
-    public Boolean authorized(String authToken) throws DataAccessException {
+    public Boolean authorized(AuthTokenRequest request) throws DataAccessException {
         calledMethod.put("authorized", true);
-        return Objects.equals(authToken, defaultAuth);
+        return Objects.equals(request.authToken(), defaultAuth);
     }
 
     @Override
@@ -78,15 +83,15 @@ public class FakeDataAccess implements DataAccess {
     }
 
     @Override
-    public void deleteSession(String authToken) throws DataAccessException {
+    public void deleteSession(AuthTokenRequest request) throws DataAccessException {
         calledMethod.put("deleteSession", true);
-        this.authToken = authToken;
+        this.authToken = request.authToken();
     }
 
     @Override
-    public UserData findUser(String username, String password) throws DataAccessException {
+    public UserData findUser(String username) throws DataAccessException {
         calledMethod.put("findUser", true);
-        if (Objects.equals(username, defaultUser.username()) && Objects.equals(password, defaultUser.password())){
+        if (Objects.equals(username, defaultUser.username())){
             return new UserData(defaultUser.username(), defaultUser.password(), defaultUser.email());
         }
         return null;
@@ -111,9 +116,9 @@ public class FakeDataAccess implements DataAccess {
     }
 
     @Override
-    public String findUser(String authToken) throws DataAccessException {
+    public String findUser(AuthTokenRequest request) throws DataAccessException {
         calledMethod.put("findUser", true);
-        if (Objects.equals(authToken, defaultAuth)) {
+        if (Objects.equals(request.authToken(), defaultAuth)) {
             return defaultUser.username();
         }
         return null;

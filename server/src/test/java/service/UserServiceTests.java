@@ -20,12 +20,13 @@ class UserServiceTests extends ServiceTests{
         assertThrows(AlreadyTakenException.class,
                 () -> userService.registerUser(new RegisterRequest(
                         dataAccess.defaultUser.username(),
-                        dataAccess.defaultUser.password(),
+                        "password",
                         dataAccess.defaultUser.email()
                 )));
         assertDoesNotThrow(() -> userService.registerUser(new RegisterRequest(
                 "newUser", "password", "email")));
-        assertEquals(dataAccess.userData, newUser);
+        assertEquals(new UserData(dataAccess.userData.username(), "password",
+                dataAccess.userData.email()), newUser);
         assertMethodsAccessed(new String[] {"createAuth", "findUser", "createUser"});
     }
 
@@ -38,7 +39,7 @@ class UserServiceTests extends ServiceTests{
         assertThrows(UnauthorizedException.class,
                 () -> userService.loginUser(new LoginRequest(dataAccess.defaultUser.username(), "fake_password")));
         assertDoesNotThrow(() -> userService.loginUser(new LoginRequest(dataAccess.defaultUser.username(),
-                dataAccess.defaultUser.password())));
+                "password")));
         assertMethodsAccessed(new String[] {"createAuth", "findUser"});
     }
 

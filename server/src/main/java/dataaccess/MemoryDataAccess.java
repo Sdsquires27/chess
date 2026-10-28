@@ -3,6 +3,7 @@ package dataaccess;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
+import service.requests.AuthTokenRequest;
 
 import java.util.*;
 
@@ -25,8 +26,8 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public Boolean authorized(String authToken) throws DataAccessException {
-        return auth.containsKey(authToken);
+    public Boolean authorized(AuthTokenRequest request) throws DataAccessException {
+        return auth.containsKey(request.authToken());
     }
 
     @Override
@@ -45,17 +46,13 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void deleteSession(String authToken) throws DataAccessException {
-        auth.remove(authToken);
+    public void deleteSession(AuthTokenRequest request) throws DataAccessException {
+        auth.remove(request.authToken());
     }
 
     @Override
-    public UserData findUser(String username, String password) throws DataAccessException {
-        var user = users.get(username);
-        if (user == null || !Objects.equals(user.password(), password)) {
-            return null;
-        }
-        return user;
+    public UserData findUser(String username) throws DataAccessException {
+        return users.get(username);
     }
 
     @Override
@@ -75,7 +72,7 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public String findUser(String authToken) throws DataAccessException {
-        return auth.get(authToken);
+    public String findUser(AuthTokenRequest request) throws DataAccessException {
+        return auth.get(request.authToken());
     }
 }

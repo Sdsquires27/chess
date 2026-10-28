@@ -3,6 +3,7 @@ package dataaccess;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import service.requests.AuthTokenRequest;
 
 import java.util.Collection;
 import java.util.List;
@@ -58,7 +59,7 @@ public class SQLDataAccess implements DataAccess{
     }
 
     @Override
-    public Boolean authorized(String authToken) throws DataAccessException {
+    public Boolean authorized(AuthTokenRequest request) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = String.format("""
                     SELECT EXISTS (
@@ -68,7 +69,7 @@ public class SQLDataAccess implements DataAccess{
                     );
                     """, authTableName);
             try (var preparedStatement = conn.prepareStatement(statement)){
-                preparedStatement.setString(1, authToken);
+                preparedStatement.setString(1, request.authToken());
                 try (var result = preparedStatement.executeQuery()){
                     if (result.next()){
                         return result.getBoolean(1);
@@ -109,13 +110,13 @@ public class SQLDataAccess implements DataAccess{
     }
 
     @Override
-    public void deleteSession(String authToken) throws DataAccessException {
+    public void deleteSession(AuthTokenRequest request) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = String.format("""
                     DELETE FROM %s WHERE authToken=?;
                     """, authTableName);
             try (var preparedStatement = conn.prepareStatement(statement)){
-                preparedStatement.setString(1, authToken);
+                preparedStatement.setString(1, request.authToken());
                 preparedStatement.executeUpdate();
             }
         } catch (Exception e) {
@@ -124,17 +125,15 @@ public class SQLDataAccess implements DataAccess{
     }
 
     @Override
-    public UserData findUser(String username, String password) throws DataAccessException {
+    public UserData findUser(String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = String.format("""
                     SELECT username, password_hash, email
                     FROM %s
                     WHERE username = ?
-                        AND password_hash = ?;
                     """, userTableName);
             try (var preparedStatement = conn.prepareStatement(statement)){
                 preparedStatement.setString(1, username);
-                preparedStatement.setString(2, password);
                 try (var result = preparedStatement.executeQuery()){
                     if (result.next()) {
                         return new UserData(result.getString("username"),
@@ -194,7 +193,7 @@ public class SQLDataAccess implements DataAccess{
     }
 
     @Override
-    public String findUser(String authToken) throws DataAccessException {
+    public String findUser(AuthTokenRequest request) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = String.format("""
                     SELECT username
@@ -202,7 +201,7 @@ public class SQLDataAccess implements DataAccess{
                     WHERE authToken = ?
                     """, authTableName);
             try (var preparedStatement = conn.prepareStatement(statement)){
-                preparedStatement.setString(1, authToken);
+                preparedStatement.setString(1, request.authToken());
                 try (var result = preparedStatement.executeQuery()){
                     if (result.next()) {
                         return result.getString("username");

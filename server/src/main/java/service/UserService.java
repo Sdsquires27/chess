@@ -3,6 +3,7 @@ package service;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import model.*;
+import org.mindrot.jbcrypt.BCrypt;
 import service.requests.*;
 
 public class UserService extends ChessService{
@@ -18,12 +19,12 @@ public class UserService extends ChessService{
             throw new InvalidInputException();
         }
 
-        var user = dataAccess.findUser(request.username(), request.password());
+        var user = dataAccess.findUser(request.username());
         if (user != null) {
             throw new AlreadyTakenException();
         }
-
-        dataAccess.createUser(new UserData(request.username(), request.password(), request.email()));
+        var hash = BCrypt.hashpw(request.password(), BCrypt.gensalt());
+        dataAccess.createUser(new UserData(request.username(), hash, request.email()));
         var authData = new AuthData(AuthService.generateToken(), request.username());
         dataAccess.createAuth(authData);
         return authData;
@@ -34,8 +35,8 @@ public class UserService extends ChessService{
         if(invalidInput(new String[]{request.username(), request.password()})) {
             throw new InvalidInputException();
         }
-        var user = dataAccess.findUser(request.username(), request.password());
-        if (user == null) {
+        var user = dataAccess.findUser(request.username());
+        if (user == null || !BCrypt.checkpw(request.password(), user.password())) {
             throw new UnauthorizedException();
         }
         var authData = new AuthData(AuthService.generateToken(), user.username());
@@ -44,10 +45,10 @@ public class UserService extends ChessService{
     }
 
     public void logout(AuthTokenRequest request) throws DataAccessException, UnauthorizedException{
-        if (!dataAccess.authorized(request.authToken())) {
+        if (!dataAccess.authorized(request)) {
             throw new UnauthorizedException();
         }
-        dataAccess.deleteSession(request.authToken());
+        dataAccess.deleteSession(request);
     }
 
 

@@ -19,7 +19,7 @@ public class GameService extends ChessService{
     }
 
     public Collection<GameData> listGames(AuthTokenRequest request) throws DataAccessException, UnauthorizedException{
-        if (!dataAccess.authorized(request.authToken())) {
+        if (!dataAccess.authorized(request)) {
             throw new UnauthorizedException();
         }
         return dataAccess.listGames();
@@ -30,7 +30,7 @@ public class GameService extends ChessService{
         if (invalidInput(new String[] {request.gameName()})) {
             throw new InvalidInputException();
         }
-        if (!dataAccess.authorized(request.authToken())) {
+        if (!dataAccess.authorized(new AuthTokenRequest(request.authToken()))) {
             throw new UnauthorizedException();
         }
         int id = new Random().nextInt(10000);
@@ -53,7 +53,7 @@ public class GameService extends ChessService{
         } catch (NumberFormatException e) {
             throw new InvalidInputException();
         }
-        var username = dataAccess.findUser(request.authToken());
+        var username = dataAccess.findUser(new AuthTokenRequest(request.authToken()));
         if (username == null) {
             throw new UnauthorizedException();
         }
