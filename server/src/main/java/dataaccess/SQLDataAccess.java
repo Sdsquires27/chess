@@ -203,7 +203,7 @@ public class SQLDataAccess implements DataAccess{
             try (var preparedStatement = conn.prepareStatement(statement)){
                 preparedStatement.setString(1, request.authToken());
                 try (var result = preparedStatement.executeQuery()){
-                    if (result.next()) {
+                     if (result.next()) {
                         return result.getString("username");
                     }
                     return null;
