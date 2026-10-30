@@ -71,6 +71,6 @@ public class GameService extends ChessService{
             }
             newGame = new GameData(id, username, game.blackUsername(), game.gameName(), game.game());
         }
-        dataAccess.updateGame(id, new GsonBuilder().enableComplexMapKeySerialization().create().toJson(newGame));
+        dataAccess.updateGame(id, newGame);
     }
 }

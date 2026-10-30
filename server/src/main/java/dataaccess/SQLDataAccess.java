@@ -1,12 +1,17 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 import service.requests.AuthTokenRequest;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class SQLDataAccess implements DataAccess{
 
@@ -29,10 +34,11 @@ public class SQLDataAccess implements DataAccess{
                     );""", userTableName);
             var createGameTable = String.format("""
                     CREATE TABLE IF NOT EXISTS %s (
-                        authToken INT NOT NULL,
+                        gameID INT NOT NULL,
                         whiteUsername VARCHAR(255) NOT NULL,
                         blackUsername VARCHAR(255) NOT NULL,
-                        chessGame VARCHAR(255) NOT NULL
+                        gameName VARCHAR(255) NOT NULL,
+                        chessGame TEXT NOT NULL
                     );""", gameTableName);
             for (var statement : new String[] {createAuthTable, createUserTable, createGameTable}){
                 try (var createTableStatement = conn.prepareStatement(statement)) {
@@ -85,8 +91,22 @@ public class SQLDataAccess implements DataAccess{
     @Override
     public void createGame(String gameName, int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            throw new RuntimeException("not implemented");
+            var game = new ChessGame();
+            var gameString = new GsonBuilder().enableComplexMapKeySerialization().create().toJson(game);
+            var statement = String.format("""
+                    INSERT INTO %s (gameID, whiteUsername, blackUsername, gameName, chessGame)
+                    VALUES (?, ?, ?, ?, ?);
+                    """, gameTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.setInt(1, gameID);
+                preparedStatement.setString(2, "");
+                preparedStatement.setString(3, "");
+                preparedStatement.setString(4, gameName);
+                preparedStatement.setString(5, gameString);
+                preparedStatement.executeUpdate();
+            }
         } catch (Exception e) {
+            System.out.println("ERROR: Create game failed: " + e.getMessage());
             throw new DataAccessException("Create game failed");
         }
     }
@@ -94,17 +114,64 @@ public class SQLDataAccess implements DataAccess{
     @Override
     public GameData findGame(int gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            throw new RuntimeException("not implemented");
+            var statement = String.format("""
+                    SELECT whiteUsername, blackUsername, gameName, chessGame
+                    FROM %s
+                    WHERE gameID = ?
+                    """, gameTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.setInt(1, gameID);
+                try (var result = preparedStatement.executeQuery()){
+                    if (result.next()) {
+                        var whiteUsername = result.getString("whiteUsername");
+                        var blackUsername = result.getString("blackUsername");
+                        var gameName = result.getString("gameName");
+                        var gameString = result.getString("chessGame");
+                        var game = new Gson().fromJson(gameString, ChessGame.class);
+                        return new GameData(gameID,
+                                returnNullIfEmpty(whiteUsername),
+                                returnNullIfEmpty(blackUsername),
+                                gameName, game);
+                    }
+                    return null;
+                }
+            }
         } catch (Exception e) {
+            System.out.println("ERROR: Find game failed: " + e.getMessage());
             throw new DataAccessException("Find game failed");
         }
+    }
+
+    static String returnNullIfEmpty(String s){
+        return Objects.equals(s, "") ? null : s;
     }
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            throw new RuntimeException("not implemented");
-        } catch (Exception e) {
+            var statement = String.format("""
+                    SELECT gameID, whiteUsername, blackUsername, gameName, chessGame
+                    FROM %s;
+                    """, gameTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                try (var result = preparedStatement.executeQuery()){
+                    var games = new ArrayList<GameData>();
+                    while (result.next()) {
+                        var gameID = result.getInt("gameID");
+                        var whiteUsername = result.getString("whiteUsername");
+                        var blackUsername = result.getString("blackUsername");
+                        var gameName = result.getString("gameName");
+                        var gameString = result.getString("chessGame");
+                        var game = new Gson().fromJson(gameString, ChessGame.class);
+                        var gameData = new GameData(gameID,
+                                returnNullIfEmpty(whiteUsername),
+                                returnNullIfEmpty(blackUsername),
+                                gameName, game);
+                        games.add(gameData);
+                    }
+                    return games;
+                }
+            }        } catch (Exception e) {
             throw new DataAccessException("List games failed");
         }
     }
@@ -184,12 +251,29 @@ public class SQLDataAccess implements DataAccess{
     }
 
     @Override
-    public void updateGame(int gameID, String game) throws DataAccessException {
+    public void updateGame(int gameID, GameData game) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            throw new RuntimeException("not implemented");
-        } catch (Exception e) {
+            var statement = String.format("""
+                    UPDATE %s
+                    SET whiteUsername = ?, blackUsername = ?, gameName = ?, chessGame = ?
+                    WHERE gameID = ?;
+                    """, gameTableName);
+            try (var preparedStatement = conn.prepareStatement(statement)){
+                preparedStatement.setString(1, safeString(game.whiteUsername()));
+                preparedStatement.setString(2, safeString(game.blackUsername()));
+                preparedStatement.setString(3, game.gameName());
+                preparedStatement.setString(4,
+                        new GsonBuilder().enableComplexMapKeySerialization().create().toJson(game.game()));
+                preparedStatement.setInt(5, gameID);
+                preparedStatement.executeUpdate();
+            }        } catch (Exception e) {
+            System.out.println("ERROR: Update game: " + e.getMessage());
             throw new DataAccessException("Update game failed");
         }
+    }
+
+    static String safeString(String s){
+        return s == null ? "" : s;
     }
 
     @Override

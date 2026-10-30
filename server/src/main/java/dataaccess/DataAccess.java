@@ -15,6 +15,6 @@ public interface DataAccess {
     public UserData findUser(String username) throws DataAccessException;
     public void createAuth(AuthData authData) throws DataAccessException;
     public void createUser(UserData userData) throws DataAccessException;
-    public void updateGame(int gameID, String game) throws DataAccessException;
+    public void updateGame(int gameID, GameData game) throws DataAccessException;
     public String findUser(AuthTokenRequest request) throws DataAccessException;
 }

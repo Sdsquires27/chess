@@ -66,9 +66,8 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void updateGame(int gameID, String game) throws DataAccessException {
-        var newGame = new Gson().fromJson(game, GameData.class);
-        games.put(gameID, newGame);
+    public void updateGame(int gameID, GameData game) throws DataAccessException {
+        games.put(gameID, game);
     }
 
     @Override

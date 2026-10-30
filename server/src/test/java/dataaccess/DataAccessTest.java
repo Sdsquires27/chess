@@ -68,6 +68,14 @@ class DataAccessTest {
         assertEquals(user, this.user);
         user = assertDoesNotThrow(() -> dataAccess.findUser("fake user"));
         assertNull(user);
+        var username = assertDoesNotThrow(() -> dataAccess.findUser(
+                new AuthTokenRequest("token")
+        ));
+        assertEquals("username", username);
+        username = assertDoesNotThrow(() -> dataAccess.findUser(
+                new AuthTokenRequest("fake token")
+        ));
+        assertNull(username);
     }
 
     @Test
