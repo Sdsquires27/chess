@@ -1,7 +1,10 @@
-package dataaccess;
+package dataaccess.sql;
 
 import chess.ChessGame;
+import dataaccess.DataAccess;
+import dataaccess.SQLDataAccess;
 import model.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DataAccessTest {
+class SQLDataAccessTest {
 
     static DataAccess dataAccess;
     UserData user = new UserData("username", "password", "email");
@@ -23,7 +26,7 @@ class DataAccessTest {
 
     @BeforeAll
     static void setDataAccess() {
-        dataAccess = assertDoesNotThrow(SQLDataAccess::new);
+        dataAccess = Assertions.assertDoesNotThrow(SQLDataAccess::new);
     }
 
     @BeforeEach
