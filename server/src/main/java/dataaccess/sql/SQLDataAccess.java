@@ -1,8 +1,10 @@
-package dataaccess;
+package dataaccess.sql;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -10,10 +12,9 @@ import service.requests.AuthTokenRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
-public class SQLDataAccess implements DataAccess{
+public class SQLDataAccess implements DataAccess {
 
     String authTableName = "auth";
     String userTableName = "user";

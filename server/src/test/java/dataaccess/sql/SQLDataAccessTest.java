@@ -2,7 +2,6 @@ package dataaccess.sql;
 
 import chess.ChessGame;
 import dataaccess.DataAccess;
-import dataaccess.SQLDataAccess;
 import model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
