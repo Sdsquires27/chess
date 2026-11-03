@@ -6,7 +6,6 @@ import model.GameData;
 import java.util.Collection;
 
 public interface ServerFacade {
-    public State state = null;
     public void register(String username, String password, String email) throws ServerFacadeException;
     public Collection<GameData> listGames() throws ServerFacadeException;
     public void login(String username, String password) throws ServerFacadeException;

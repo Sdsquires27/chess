@@ -1,6 +1,8 @@
 package client;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import model.GameData;
 
 import java.net.URI;
@@ -8,7 +10,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 
 public class HTTPServerFacade implements ServerFacade{
@@ -25,7 +29,18 @@ public class HTTPServerFacade implements ServerFacade{
         }
 
         public Collection<GameData> listGames() throws ServerFacadeException {
-            return null;
+            try {
+                class GameResponse {
+                    List<GameData> games;
+                }
+                var response = get("/game", "authToken", authToken);
+                var gson = new Gson();
+                var gameList = gson.fromJson(response, GameResponse.class);
+                return gameList.games;
+            } catch(Exception e) {
+                System.out.println(e);
+                throw new ServerFacadeException("Server did not return correctly");
+            }
         }
 
         public void login(String username, String password) throws ServerFacadeException {
@@ -47,8 +62,8 @@ public class HTTPServerFacade implements ServerFacade{
 
     }
 
-    private String get(String host, int port, String path, String... headers) throws Exception{
-            String url = String.format(Locale.getDefault(), "http://%s:%d%s", host, port, path);
+    private String get(String path, String... headers) throws Exception{
+            String url = String.format(Locale.getDefault(), "http://localhost:%d%s", this.port, path);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(url))
                     .timeout(Duration.ofMillis(5000))
