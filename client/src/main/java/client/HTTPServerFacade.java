@@ -76,7 +76,16 @@ public class HTTPServerFacade implements ServerFacade{
 
     @Override
     public void logout() throws ServerFacadeException {
-
+        try {
+            var response = delete(port, "/session", "authToken", authToken);
+            authToken = new Gson().fromJson(response, AuthResponse.class).authToken;
+        } catch(Exception e) {
+            System.out.println("ERROR: Service responded with: " + e);
+            if (e.getMessage().equals("401")) {
+                throw new ServerFacadeException("Failed to log out user");
+            }
+            throw new ServerFacadeException("Server responded with error");
+        }
     }
 
     @Override
