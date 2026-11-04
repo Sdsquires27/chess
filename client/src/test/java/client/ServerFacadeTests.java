@@ -69,7 +69,14 @@ public class ServerFacadeTests {
         assertDoesNotThrow(() -> facade.register("username", "password", "email"));
         assertDoesNotThrow(() -> facade.logout());
         assertThrows(ServerFacadeException.class, () -> facade.logout());
+    }
 
+    @Test
+    public void createGame() {
+        assertThrows(ServerFacadeException.class, () -> facade.createGame("newGame"));
+        assertDoesNotThrow(() -> facade.register("username", "password", "email"));
+        assertThrows(ServerFacadeException.class, () -> facade.createGame(""));
+        assertDoesNotThrow(() -> facade.createGame("newGame"));
     }
 
 }

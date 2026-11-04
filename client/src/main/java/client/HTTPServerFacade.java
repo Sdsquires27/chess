@@ -46,7 +46,7 @@ public class HTTPServerFacade implements ServerFacade{
                 class GameResponse {
                     List<GameData> games;
                 }
-                var response = get(port, "/game", "authToken", authToken);
+                var response = get(port, "/game", "authorization", authToken);
                 var gson = new Gson();
                 var gameList = gson.fromJson(response, GameResponse.class);
                 return gameList.games;
@@ -92,7 +92,7 @@ public class HTTPServerFacade implements ServerFacade{
     public void createGame(String gameName) throws ServerFacadeException {
         try {
             var body = Map.of("gameName", gameName);
-            post(port, "/game", body, "authToken", authToken);
+            post(port, "/game", body, "authorization", authToken);
         } catch(Exception e) {
             System.out.println("ERROR: Service responded with: " + e);
             switch(e.getMessage()){
@@ -110,7 +110,7 @@ public class HTTPServerFacade implements ServerFacade{
     public void joinGame(String color, String gameName) throws ServerFacadeException {
         try {
             var body = Map.of("playerColor", color, "gameName", gameName);
-            put(port, "/game", body, "authToken", authToken);
+            put(port, "/game", body, "authorization", authToken);
         } catch(Exception e) {
             System.out.println("ERROR: Service responded with: " + e);
             switch(e.getMessage()){
@@ -157,7 +157,6 @@ public class HTTPServerFacade implements ServerFacade{
             builder.headers(headers);
         }
         HttpRequest request = builder.build();
-        System.out.println(request.headers());
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
