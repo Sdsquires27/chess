@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.sql.SQLDataAccess;
@@ -77,7 +78,8 @@ public class Server {
 
     private void listGames(Context ctx) throws DataAccessException {
         var games = gameService.listGames(new AuthTokenRequest(ctx.header("authorization")));
-        String response = new Gson().toJson(Map.of("games", games));
+        String response = new GsonBuilder().enableComplexMapKeySerialization().create()
+                .toJson(Map.of("games", games));
         ctx.contentType("application/json");
         ctx.result(response);
     }

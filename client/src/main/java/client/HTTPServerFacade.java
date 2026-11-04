@@ -23,6 +23,9 @@ public class HTTPServerFacade implements ServerFacade{
         static class AuthResponse {
             String authToken;
         }
+        static class GameResponse {
+            List<GameData> games;
+        }
         public void register(String username, String password, String email) throws ServerFacadeException{
             try {
                 var body = Map.of("username", username, "password", password, "email", email);
@@ -43,9 +46,6 @@ public class HTTPServerFacade implements ServerFacade{
 
         public Collection<GameData> listGames() throws ServerFacadeException {
             try {
-                class GameResponse {
-                    List<GameData> games;
-                }
                 var response = get(port, "/game", "authorization", authToken);
                 var gson = new Gson();
                 var gameList = gson.fromJson(response, GameResponse.class);

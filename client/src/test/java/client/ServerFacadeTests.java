@@ -79,4 +79,13 @@ public class ServerFacadeTests {
         assertDoesNotThrow(() -> facade.createGame("newGame"));
     }
 
+    @Test
+    public void listGames() {
+        assertThrows(ServerFacadeException.class, () -> facade.listGames());
+        assertDoesNotThrow(() -> facade.register("username", "password", "email"));
+        assertDoesNotThrow(() -> facade.createGame("newGame"));
+        var size = assertDoesNotThrow(() -> facade.listGames().size());
+        assertEquals(1, size);
+    }
+
 }
