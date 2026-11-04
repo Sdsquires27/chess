@@ -39,7 +39,7 @@ public class GameService extends ChessService{
     }
 
     public void joinGame(JoinGameRequest request) throws DataAccessException, InvalidInputException,
-            UnauthorizedException, AlreadyTakenException{
+            UnauthorizedException, AlreadyTakenException {
         var playerColor = request.playerColor();
         if(invalidInput(new String[]{playerColor})){
             throw new InvalidInputException();

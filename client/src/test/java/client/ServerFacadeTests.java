@@ -88,4 +88,17 @@ public class ServerFacadeTests {
         assertEquals(1, size);
     }
 
+    @Test
+    public void joinGame() {
+        assertDoesNotThrow(() -> facade.register("username", "password", "email"));
+        assertDoesNotThrow(() -> facade.createGame("newGame"));
+        assertThrows(ServerFacadeException.class, () -> facade.joinGame("", "1234"));
+        assertThrows(ServerFacadeException.class, () -> facade.joinGame("BLACK", ""));
+        var game = assertDoesNotThrow(() -> facade.listGames()).iterator().next();
+        assertDoesNotThrow(() -> facade.joinGame("WHITE", String.valueOf(game.gameID())));
+        assertDoesNotThrow(() -> facade.logout());
+        assertThrows(ServerFacadeException.class, () -> facade.joinGame("BLACK", String.valueOf(game.gameID())));
+
+    }
+
 }

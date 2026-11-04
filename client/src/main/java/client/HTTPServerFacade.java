@@ -47,9 +47,7 @@ public class HTTPServerFacade implements ServerFacade{
         public Collection<GameData> listGames() throws ServerFacadeException {
             try {
                 var response = get(port, "/game", "authorization", authToken);
-                var gson = new Gson();
-                var gameList = gson.fromJson(response, GameResponse.class);
-                return gameList.games;
+                return new Gson().fromJson(response, GameResponse.class).games;
             } catch(Exception e) {
                 System.out.println("ERROR: Service responded with: " + e);
                 throw new ServerFacadeException("Server responded with error");
@@ -107,9 +105,9 @@ public class HTTPServerFacade implements ServerFacade{
     }
 
     @Override
-    public void joinGame(String color, String gameName) throws ServerFacadeException {
+    public void joinGame(String color, String gameID) throws ServerFacadeException {
         try {
-            var body = Map.of("playerColor", color, "gameName", gameName);
+            var body = Map.of("playerColor", color, "gameID", gameID);
             put(port, "/game", body, "authorization", authToken);
         } catch(Exception e) {
             System.out.println("ERROR: Service responded with: " + e);
@@ -193,7 +191,7 @@ public class HTTPServerFacade implements ServerFacade{
         var builder = HttpRequest.newBuilder()
                 .uri(new URI(url))
                 .timeout(Duration.ofMillis(5000))
-                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)));
+                .PUT(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)));
 
         if (headers != null && headers.length > 0){
             builder.headers(headers);
