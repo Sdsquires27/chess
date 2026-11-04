@@ -126,12 +126,16 @@ public class HTTPServerFacade implements ServerFacade{
 
     static String get(int port, String path, String... headers) throws Exception{
             String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
-            HttpRequest request = HttpRequest.newBuilder()
+
+            var builder = HttpRequest.newBuilder()
                     .uri(new URI(url))
                     .timeout(Duration.ofMillis(5000))
-                    .headers(headers)
-                    .GET()
-                    .build();
+                    .GET();
+
+            if (headers != null && headers.length > 0){
+                builder.headers(headers);
+            }
+            HttpRequest request = builder.build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
@@ -143,12 +147,16 @@ public class HTTPServerFacade implements ServerFacade{
 
     static String delete(int port, String path, String... headers) throws Exception{
         String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
-        HttpRequest request = HttpRequest.newBuilder()
+
+        var builder = HttpRequest.newBuilder()
                 .uri(new URI(url))
                 .timeout(Duration.ofMillis(5000))
-                .headers(headers)
-                .DELETE()
-                .build();
+                .DELETE();
+
+        if (headers != null && headers.length > 0){
+            builder.headers(headers);
+        }
+        HttpRequest request = builder.build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
@@ -160,12 +168,16 @@ public class HTTPServerFacade implements ServerFacade{
 
     static String post(int port, String path, Map<String, String> body, String... headers) throws Exception{
         String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
-        HttpRequest request = HttpRequest.newBuilder()
+
+        var builder = HttpRequest.newBuilder()
                 .uri(new URI(url))
                 .timeout(Duration.ofMillis(5000))
-                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)))
-                .headers(headers)
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)));
+
+        if (headers != null && headers.length > 0){
+            builder.headers(headers);
+        }
+        HttpRequest request = builder.build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
@@ -177,12 +189,16 @@ public class HTTPServerFacade implements ServerFacade{
 
     static String put(int port, String path, Map<String, String> body, String... headers) throws Exception{
         String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
-        HttpRequest request = HttpRequest.newBuilder()
+
+        var builder = HttpRequest.newBuilder()
                 .uri(new URI(url))
                 .timeout(Duration.ofMillis(5000))
-                .PUT(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)))
-                .headers(headers)
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)));
+
+        if (headers != null && headers.length > 0){
+            builder.headers(headers);
+        }
+        HttpRequest request = builder.build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
