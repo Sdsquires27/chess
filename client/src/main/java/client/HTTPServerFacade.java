@@ -10,10 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class HTTPServerFacade implements ServerFacade{
         int port;
@@ -23,9 +20,25 @@ public class HTTPServerFacade implements ServerFacade{
         public HTTPServerFacade(int port){
             this.port = port;
         }
-
+        static class AuthResponse {
+            String authToken;
+        }
         public void register(String username, String password, String email) throws ServerFacadeException{
-
+            try {
+                var body = Map.of("username", username, "password", password, "email", email);
+                var response = post(port, "/user", body);
+                authToken = new Gson().fromJson(response, AuthResponse.class).authToken;
+            } catch(Exception e) {
+                System.out.println("ERROR: Service responded with: " + e);
+                switch(e.getMessage()){
+                    case "400":
+                        throw new ServerFacadeException("Bad request");
+                    case "403":
+                        throw new ServerFacadeException("Username already taken");
+                    default:
+                        throw new ServerFacadeException("Server responded with error");
+                }
+            }
         }
 
         public Collection<GameData> listGames() throws ServerFacadeException {
@@ -33,18 +46,32 @@ public class HTTPServerFacade implements ServerFacade{
                 class GameResponse {
                     List<GameData> games;
                 }
-                var response = get("/game", "authToken", authToken);
+                var response = get(port, "/game", "authToken", authToken);
                 var gson = new Gson();
                 var gameList = gson.fromJson(response, GameResponse.class);
                 return gameList.games;
             } catch(Exception e) {
-                System.out.println(e);
-                throw new ServerFacadeException("Server did not return correctly");
+                System.out.println("ERROR: Service responded with: " + e);
+                throw new ServerFacadeException("Server responded with error");
             }
         }
 
         public void login(String username, String password) throws ServerFacadeException {
-
+            try {
+                var body = Map.of("username", username, "password", password);
+                var response = post(port, "/session", body);
+                authToken = new Gson().fromJson(response, AuthResponse.class).authToken;
+            } catch(Exception e) {
+                System.out.println("ERROR: Service responded with: " + e);
+                switch(e.getMessage()) {
+                    case "400":
+                        throw new ServerFacadeException("Bad request");
+                    case "401":
+                        throw new ServerFacadeException("Failed to authenticate user");
+                    default:
+                        throw new ServerFacadeException("Server responded with error");
+                }
+            }
         }
 
     @Override
@@ -62,8 +89,8 @@ public class HTTPServerFacade implements ServerFacade{
 
     }
 
-    private String get(String path, String... headers) throws Exception{
-            String url = String.format(Locale.getDefault(), "http://localhost:%d%s", this.port, path);
+    static String get(int port, String path, String... headers) throws Exception{
+            String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(url))
                     .timeout(Duration.ofMillis(5000))
@@ -75,7 +102,58 @@ public class HTTPServerFacade implements ServerFacade{
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return response.body();
             } else {
-                throw new Exception("Error: received status code: " + response.statusCode());
+                throw new Exception(String.valueOf(response.statusCode()));
             }
         }
+
+    static String delete(int port, String path, String... headers) throws Exception{
+        String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(url))
+                .timeout(Duration.ofMillis(5000))
+                .headers(headers)
+                .DELETE()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            return response.body();
+        } else {
+            throw new Exception(String.valueOf(response.statusCode()));
+        }
+    }
+
+    static String post(int port, String path, Map<String, String> body, String... headers) throws Exception{
+        String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(url))
+                .timeout(Duration.ofMillis(5000))
+                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)))
+                .headers(headers)
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            return response.body();
+        } else {
+            throw new Exception(String.valueOf(response.statusCode()));
+        }
+    }
+
+    static String put(int port, String path, Map<String, String> body, String... headers) throws Exception{
+        String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(url))
+                .timeout(Duration.ofMillis(5000))
+                .PUT(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)))
+                .headers(headers)
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            return response.body();
+        } else {
+            throw new Exception(String.valueOf(response.statusCode()));
+        }
+    }
 }
