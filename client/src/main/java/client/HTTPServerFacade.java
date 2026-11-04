@@ -77,8 +77,8 @@ public class HTTPServerFacade implements ServerFacade{
     @Override
     public void logout() throws ServerFacadeException {
         try {
-            var response = delete(port, "/session", "authToken", authToken);
-            authToken = new Gson().fromJson(response, AuthResponse.class).authToken;
+            delete(port, "/session", "authToken", authToken);
+            authToken = null;
         } catch(Exception e) {
             System.out.println("ERROR: Service responded with: " + e);
             if (e.getMessage().equals("401")) {
@@ -90,7 +90,20 @@ public class HTTPServerFacade implements ServerFacade{
 
     @Override
     public void createGame(String gameName) throws ServerFacadeException {
-
+        try {
+            var body = Map.of("gameName", gameName);
+            post(port, "/game", body, "authToken", authToken);
+        } catch(Exception e) {
+            System.out.println("ERROR: Service responded with: " + e);
+            switch(e.getMessage()){
+                case "400":
+                    throw new ServerFacadeException("Bad request");
+                case "401":
+                    throw new ServerFacadeException("Invalid authorization");
+                default:
+                    throw new ServerFacadeException("Server responded with error");
+            }
+        }
     }
 
     @Override
