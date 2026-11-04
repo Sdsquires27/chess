@@ -27,7 +27,7 @@ public class HTTPServerFacade implements ServerFacade{
             try {
                 var body = Map.of("username", username, "password", password, "email", email);
                 var response = post(port, "/user", body);
-                authToken = new Gson().fromJson(response, AuthResponse.class).authToken;
+                this.authToken = new Gson().fromJson(response, AuthResponse.class).authToken;
             } catch(Exception e) {
                 System.out.println("ERROR: Service responded with: " + e);
                 switch(e.getMessage()){
@@ -77,7 +77,7 @@ public class HTTPServerFacade implements ServerFacade{
     @Override
     public void logout() throws ServerFacadeException {
         try {
-            delete(port, "/session", "authToken", authToken);
+            delete(port, "/session", "authorization", authToken);
             authToken = null;
         } catch(Exception e) {
             System.out.println("ERROR: Service responded with: " + e);
@@ -157,6 +157,7 @@ public class HTTPServerFacade implements ServerFacade{
             builder.headers(headers);
         }
         HttpRequest request = builder.build();
+        System.out.println(request.headers());
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 200 && response.statusCode() < 300) {

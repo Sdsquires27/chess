@@ -61,6 +61,14 @@ public class ServerFacadeTests {
         assertThrows(ServerFacadeException.class,
                 () -> facade.login("username", ""));
         assertDoesNotThrow(() -> facade.login("username", "password"));
+    }
+
+    @Test
+    public void logout() {
+        assertThrows(ServerFacadeException.class, () -> facade.logout());
+        assertDoesNotThrow(() -> facade.register("username", "password", "email"));
+        assertDoesNotThrow(() -> facade.logout());
+        assertThrows(ServerFacadeException.class, () -> facade.logout());
 
     }
 
