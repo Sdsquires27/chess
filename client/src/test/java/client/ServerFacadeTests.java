@@ -49,4 +49,19 @@ public class ServerFacadeTests {
         assertDoesNotThrow(() -> facade.register("newUsername", "password", "email"));
     }
 
+    @Test
+    public void login() {
+        assertDoesNotThrow(() -> facade.register("username", "password", "email"));
+        assertThrows(ServerFacadeException.class,
+                () -> facade.login("newUsername", "password"));
+        assertThrows(ServerFacadeException.class,
+                () -> facade.login("username", "newPassword"));
+        assertThrows(ServerFacadeException.class,
+                () -> facade.login("", "password"));
+        assertThrows(ServerFacadeException.class,
+                () -> facade.login("username", ""));
+        assertDoesNotThrow(() -> facade.login("username", "password"));
+
+    }
+
 }
