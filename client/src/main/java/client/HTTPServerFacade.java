@@ -107,8 +107,21 @@ public class HTTPServerFacade implements ServerFacade{
     }
 
     @Override
-    public void joinGame(String gameName) throws ServerFacadeException {
-
+    public void joinGame(String color, String gameName) throws ServerFacadeException {
+        try {
+            var body = Map.of("playerColor", color, "gameName", gameName);
+            put(port, "/game", body, "authToken", authToken);
+        } catch(Exception e) {
+            System.out.println("ERROR: Service responded with: " + e);
+            switch(e.getMessage()){
+                case "400":
+                    throw new ServerFacadeException("Bad request");
+                case "401":
+                    throw new ServerFacadeException("Invalid authorization");
+                default:
+                    throw new ServerFacadeException("Server responded with error");
+            }
+        }
     }
 
     static String get(int port, String path, String... headers) throws Exception{
