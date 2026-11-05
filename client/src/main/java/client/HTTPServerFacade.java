@@ -32,7 +32,6 @@ public class HTTPServerFacade implements ServerFacade{
                 var response = post(port, "/user", body);
                 this.authToken = new Gson().fromJson(response, AuthResponse.class).authToken;
             } catch(Exception e) {
-                System.out.println("ERROR: Service responded with: " + e);
                 switch(e.getMessage()){
                     case "400":
                         throw new ServerFacadeException("Bad request");
@@ -49,7 +48,6 @@ public class HTTPServerFacade implements ServerFacade{
                 var response = get(port, "/game", "authorization", authToken);
                 return new Gson().fromJson(response, GameResponse.class).games;
             } catch(Exception e) {
-                System.out.println("ERROR: Service responded with: " + e);
                 throw new ServerFacadeException("Server responded with error");
             }
         }
@@ -60,7 +58,6 @@ public class HTTPServerFacade implements ServerFacade{
                 var response = post(port, "/session", body);
                 authToken = new Gson().fromJson(response, AuthResponse.class).authToken;
             } catch(Exception e) {
-                System.out.println("ERROR: Service responded with: " + e);
                 switch(e.getMessage()) {
                     case "400":
                         throw new ServerFacadeException("Bad request");
@@ -78,7 +75,6 @@ public class HTTPServerFacade implements ServerFacade{
             delete(port, "/session", "authorization", authToken);
             authToken = null;
         } catch(Exception e) {
-            System.out.println("ERROR: Service responded with: " + e);
             if (e.getMessage().equals("401")) {
                 throw new ServerFacadeException("Failed to log out user");
             }
@@ -92,7 +88,6 @@ public class HTTPServerFacade implements ServerFacade{
             var body = Map.of("gameName", gameName);
             post(port, "/game", body, "authorization", authToken);
         } catch(Exception e) {
-            System.out.println("ERROR: Service responded with: " + e);
             switch(e.getMessage()){
                 case "400":
                     throw new ServerFacadeException("Bad request");
@@ -110,7 +105,6 @@ public class HTTPServerFacade implements ServerFacade{
             var body = Map.of("playerColor", color, "gameID", gameID);
             put(port, "/game", body, "authorization", authToken);
         } catch(Exception e) {
-            System.out.println("ERROR: Service responded with: " + e);
             switch(e.getMessage()){
                 case "400":
                     throw new ServerFacadeException("Bad request");

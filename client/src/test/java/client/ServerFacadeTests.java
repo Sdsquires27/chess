@@ -31,6 +31,11 @@ public class ServerFacadeTests {
 
     @AfterAll
     static void stopServer() {
+        try {
+            HTTPServerFacade.delete(port, "/db");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         server.stop();
     }
 
