@@ -1,6 +1,9 @@
 package client;
 
 import java.util.Scanner;
+
+import chess.ChessGame;
+import model.GameData;
 import ui.EscapeSequences;
 
 public class Repl {
@@ -124,9 +127,21 @@ public class Repl {
                 }
                 return;
             case "join":
+                ChessGame game = null;
                 if (!validateParameters(3, parameters.length)){
                     return;
                 }
+                try {
+                    game = controller.join(parameters[1], parameters[2]);
+                    printLine("Joined game successfully!");
+                } catch(ServerFacadeException | ClientControlException | BoardRendererException e) {
+                    printError("ERROR: " + e.getMessage());
+                } catch (Exception e) {
+                    printError("ERROR: we've encountered an error. Please try again later.");
+                }
+                var renderer = new BoardRenderer(parameters[2]);
+                printLine(renderer.displayBoard(game.getBoard()));
+                return;
             case "observe":
                 return;
             case "logout":
