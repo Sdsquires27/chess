@@ -2,15 +2,16 @@ package client;
 
 import chess.ChessGame;
 import model.GameData;
+import websocket.messages.ServerMessage;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientController{
+public class ClientController implements Observer{
     private final ServerFacade facade;
     public State state;
-    public ClientController(ServerFacade facade) {
-        this.facade = facade;
+    public ClientController(int port) {
+        this.facade = new HTTPServerFacade(port, this);
         state = State.SIGNED_OUT;
     }
     public void register(String username, String password, String email) {
@@ -46,8 +47,9 @@ public class ClientController{
         return game.game();
     }
 
-    public void create(String gameName) {
+    public int create(String gameName) {
         facade.createGame(gameName);
+        return facade.listGames().size();
     }
 
     public List<GameData> listGames() {
@@ -71,5 +73,10 @@ public class ClientController{
     public void logout() {
         facade.logout();
         state = State.SIGNED_OUT;
+    }
+
+    @Override
+    public void notify(ServerMessage message) {
+
     }
 }

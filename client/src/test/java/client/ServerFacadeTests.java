@@ -11,12 +11,13 @@ public class ServerFacadeTests {
     private static Server server;
     private static ServerFacade facade;
     private static int port;
+    private static TestObserver observer;
 
     @BeforeAll
     public static void init() {
         server = new Server();
         port = server.run(0);
-        facade = new HTTPServerFacade(port);
+        facade = new HTTPServerFacade(port, observer);
         System.out.println("Started test HTTP server on " + port);
     }
 

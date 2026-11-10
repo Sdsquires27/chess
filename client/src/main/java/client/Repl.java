@@ -95,8 +95,10 @@ public class Repl {
                     return;
                 }
                 try {
-                    controller.create(parameters[1]);
-                    printLine("Created game %s", parameters[1]);
+                    var numGames = controller.create(parameters[1]);
+                    printLine("Created game %s;%s ID: %s", parameters[1],
+                            EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY,
+                            numGames);
                 } catch (ServerFacadeException e){
                     printError("ERROR: " + e.getMessage());
                 } catch (Exception e) {

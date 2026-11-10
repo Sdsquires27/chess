@@ -15,10 +15,13 @@ import java.util.*;
 public class HTTPServerFacade implements ServerFacade{
         int port;
         String authToken;
+        Observer observer;
 
         private static final HttpClient HTTP_CLIENT =  HttpClient.newHttpClient();
-        public HTTPServerFacade(int port){
+        public HTTPServerFacade(int port, Observer observer){
             this.port = port;
+            this.observer = observer;
+
         }
         static class AuthResponse {
             String authToken;
@@ -111,6 +114,11 @@ public class HTTPServerFacade implements ServerFacade{
         } catch(Exception e) {
             joinOrCreateException(e);
         }
+    }
+
+    @Override
+    public void onMessage(String message) throws ServerFacadeException {
+
     }
 
     static String get(int port, String path, String... headers) throws Exception{
