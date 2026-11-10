@@ -2,6 +2,9 @@ package client;
 
 import chess.ChessGame;
 import model.GameData;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.ArrayList;
@@ -77,6 +80,28 @@ public class ClientController implements Observer{
 
     @Override
     public void notify(ServerMessage message) {
+        if (message.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
+            handleNotificationMessage((NotificationMessage) message);
+            return;
+        }
+        if (message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
+            handleLoadGameMessage((LoadGameMessage) message);
+            return;
+        }
+        if (message.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
+            handleErrorMessage((ErrorMessage) message);
+        }
+    }
 
+    private void handleNotificationMessage(NotificationMessage message) {
+        throw new RuntimeException("Not implemented");
+    }
+
+    private void handleErrorMessage(ErrorMessage message) {
+        throw new RuntimeException("Not implemented");
+    }
+
+    private void handleLoadGameMessage(LoadGameMessage message) {
+        throw new RuntimeException("Not implemented");
     }
 }
