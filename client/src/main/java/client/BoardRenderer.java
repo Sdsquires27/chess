@@ -10,10 +10,10 @@ public class BoardRenderer {
         WHITE,
         BLACK
     }
-    final String BOARD_COLOR_LIGHT = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
-    final String BOARD_COLOR_DARK = EscapeSequences.SET_BG_COLOR_DARK_GREY;
-    final String PIECE_COLOR_WHITE = EscapeSequences.SET_TEXT_COLOR_WHITE;
-    final String PIECE_COLOR_BLACK = EscapeSequences.SET_TEXT_COLOR_BLACK;
+    final static String BOARD_COLOR_LIGHT = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
+    final static String BOARD_COLOR_DARK = EscapeSequences.SET_BG_COLOR_DARK_GREY;
+    final static String PIECE_COLOR_WHITE = EscapeSequences.SET_TEXT_COLOR_WHITE;
+    final static String PIECE_COLOR_BLACK = EscapeSequences.SET_TEXT_COLOR_BLACK;
 
     Color color;
     char[] boardChars = new char[8];

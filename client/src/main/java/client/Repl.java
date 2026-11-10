@@ -107,23 +107,7 @@ public class Repl {
                 return;
             case "list":
                 try {
-                    var games = controller.listGames();
-                    if (games.isEmpty()) {
-                        printLine("There are currently no games!");
-                        return;
-                    }
-                    printLine("Current games:");
-                    for (var i = 0; i < games.size(); i++) {
-                        var game = games.get(i);
-                        printLine("%s%s.%s - %s; %sWHITE: %s | BLACK: %s",
-                                EscapeSequences.SET_TEXT_COLOR_BLUE,
-                                i + 1,
-                                EscapeSequences.SET_TEXT_COLOR_BLACK,
-                                game.gameName(),
-                                EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY,
-                                game.whiteUsername() == null ? "" : game.whiteUsername(),
-                                game.blackUsername() == null ? "" : game.blackUsername());
-                    }
+                    list();
                 } catch (ServerFacadeException e){
                     printError("ERROR: " + e.getMessage());
                 } catch (Exception e) {
@@ -131,14 +115,8 @@ public class Repl {
                 }
                 return;
             case "join":
-                if (!validateParameters(3, parameters.length)){
-                    return;
-                }
                 try {
-                    var game = controller.join(parameters[1], parameters[2]);
-                    printLine("Joined game successfully!");
-                    var renderer = new BoardRenderer(parameters[2]);
-                    printLine(renderer.displayBoard(game.getBoard()));
+                    join(parameters);
                 } catch(ServerFacadeException | ClientControlException | BoardRendererException e) {
                     printError("ERROR: " + e.getMessage());
                 } catch (Exception e) {
@@ -146,19 +124,15 @@ public class Repl {
                 }
                 return;
             case "observe":
-                if (!validateParameters(2, parameters.length)){
-                    return;
-                }
                 try {
-                    var game = controller.findGame(parameters[1]);
-                    printLine("Joined game successfully!");
-                    var renderer = new BoardRenderer("WHITE");
-                    printLine(renderer.displayBoard(game.game().getBoard()));
+                    observe(parameters);
                 } catch(ServerFacadeException | ClientControlException | BoardRendererException e) {
                     printError("ERROR: " + e.getMessage());
                 } catch (Exception e) {
                     printError("ERROR: we've encountered an error. Please try again later.");
-                }            case "logout":
+                }
+                return;
+            case "logout":
                 try {
                     controller.logout();
                     printLine("Logged out.");
@@ -173,6 +147,46 @@ public class Repl {
                 return;
             default:
                 printError("ERROR: command not recognized. Type help for a list of commands.");
+        }
+    }
+
+    private void join(String[] parameters) {
+        if (!validateParameters(3, parameters.length)){
+            return;
+        }
+        var renderer = new BoardRenderer(parameters[2]);
+        var game = controller.join(parameters[1], parameters[2]);
+        printLine("Joined game successfully!");
+        printLine(renderer.displayBoard(game.getBoard()));
+    }
+
+    private void observe(String[] parameters) {
+        if (!validateParameters(2, parameters.length)){
+            return;
+        }
+        var game = controller.findGame(parameters[1]);
+        printLine("Joined game successfully!");
+        var renderer = new BoardRenderer("WHITE");
+        printLine(renderer.displayBoard(game.game().getBoard()));
+    }
+
+    private void list() {
+        var games = controller.listGames();
+        if (games.isEmpty()) {
+            printLine("There are currently no games!");
+            return;
+        }
+        printLine("Current games:");
+        for (var i = 0; i < games.size(); i++) {
+            var game = games.get(i);
+            printLine("%s%s.%s - %s; %sWHITE: %s | BLACK: %s",
+                    EscapeSequences.SET_TEXT_COLOR_BLUE,
+                    i + 1,
+                    EscapeSequences.SET_TEXT_COLOR_BLACK,
+                    game.gameName(),
+                    EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY,
+                    game.whiteUsername() == null ? "" : game.whiteUsername(),
+                    game.blackUsername() == null ? "" : game.blackUsername());
         }
     }
 

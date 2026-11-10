@@ -16,7 +16,7 @@ public class HTTPServerFacade implements ServerFacade{
         int port;
         String authToken;
 
-        private static final HttpClient httpClient =  HttpClient.newHttpClient();
+        private static final HttpClient HTTP_CLIENT =  HttpClient.newHttpClient();
         public HTTPServerFacade(int port){
             this.port = port;
         }
@@ -88,14 +88,18 @@ public class HTTPServerFacade implements ServerFacade{
             var body = Map.of("gameName", gameName);
             post(port, "/game", body, "authorization", authToken);
         } catch(Exception e) {
-            switch(e.getMessage()){
-                case "400":
-                    throw new ServerFacadeException("Bad request");
-                case "401":
-                    throw new ServerFacadeException("Invalid authorization");
-                default:
-                    throw new ServerFacadeException("Server responded with error");
-            }
+            joinOrCreateException(e);
+        }
+    }
+
+    private void joinOrCreateException(Exception e){
+        switch(e.getMessage()){
+            case "400":
+                throw new ServerFacadeException("Bad request");
+            case "401":
+                throw new ServerFacadeException("Invalid authorization");
+            default:
+                throw new ServerFacadeException("Server responded with error");
         }
     }
 
@@ -105,14 +109,7 @@ public class HTTPServerFacade implements ServerFacade{
             var body = Map.of("playerColor", color, "gameID", gameID);
             put(port, "/game", body, "authorization", authToken);
         } catch(Exception e) {
-            switch(e.getMessage()){
-                case "400":
-                    throw new ServerFacadeException("Bad request");
-                case "401":
-                    throw new ServerFacadeException("Invalid authorization");
-                default:
-                    throw new ServerFacadeException("Server responded with error");
-            }
+            joinOrCreateException(e);
         }
     }
 
@@ -129,7 +126,7 @@ public class HTTPServerFacade implements ServerFacade{
             }
             HttpRequest request = builder.build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return response.body();
             } else {
@@ -150,7 +147,7 @@ public class HTTPServerFacade implements ServerFacade{
         }
         HttpRequest request = builder.build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
             return response.body();
         } else {
@@ -171,7 +168,7 @@ public class HTTPServerFacade implements ServerFacade{
         }
         HttpRequest request = builder.build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
             return response.body();
         } else {
@@ -192,7 +189,7 @@ public class HTTPServerFacade implements ServerFacade{
         }
         HttpRequest request = builder.build();
 
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() >= 200 && response.statusCode() < 300) {
             return response.body();
         } else {
