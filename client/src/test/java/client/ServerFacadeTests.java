@@ -1,7 +1,10 @@
 package client;
 
+import com.google.gson.Gson;
 import org.junit.jupiter.api.*;
 import server.Server;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,7 +14,7 @@ public class ServerFacadeTests {
     private static Server server;
     private static ServerFacade facade;
     private static int port;
-    private static TestObserver observer;
+    private static final TestObserver observer = new TestObserver();
 
     @BeforeAll
     public static void init() {
@@ -104,7 +107,17 @@ public class ServerFacadeTests {
         assertDoesNotThrow(() -> facade.joinGame("WHITE", String.valueOf(game.gameID())));
         assertDoesNotThrow(() -> facade.logout());
         assertThrows(ServerFacadeException.class, () -> facade.joinGame("BLACK", String.valueOf(game.gameID())));
+    }
 
+    @Test
+    public void onMessage() {
+        observer.reset();
+        NotificationMessage notificationMessage = new NotificationMessage(
+                ServerMessage.ServerMessageType.NOTIFICATION,"Test");
+        Gson gson = new Gson();
+        assertThrows(ServerFacadeException.class, () -> facade.onMessage("Test"));
+        assertDoesNotThrow(() -> facade.onMessage(gson.toJson(notificationMessage)));
+        assertEquals(notificationMessage, observer.message);
     }
 
 }

@@ -3,7 +3,9 @@ package client;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import model.GameData;
+import websocket.messages.*;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -118,6 +120,12 @@ public class HTTPServerFacade implements ServerFacade{
 
     @Override
     public void onMessage(String message) throws ServerFacadeException {
+            try {
+                var serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                observer.notify(serverMessage);
+            } catch (JsonSyntaxException e) {
+                throw new ServerFacadeException("Could not parse message");
+            }
 
     }
 
