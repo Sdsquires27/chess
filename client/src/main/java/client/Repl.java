@@ -108,6 +108,10 @@ public class Repl {
             case "list":
                 try {
                     var games = controller.listGames();
+                    if (games.isEmpty()) {
+                        printLine("There are currently no games!");
+                        return;
+                    }
                     printLine("Current games:");
                     for (var i = 0; i < games.size(); i++) {
                         var game = games.get(i);
@@ -127,24 +131,34 @@ public class Repl {
                 }
                 return;
             case "join":
-                ChessGame game = null;
                 if (!validateParameters(3, parameters.length)){
                     return;
                 }
                 try {
-                    game = controller.join(parameters[1], parameters[2]);
+                    var game = controller.join(parameters[1], parameters[2]);
                     printLine("Joined game successfully!");
+                    var renderer = new BoardRenderer(parameters[2]);
+                    printLine(renderer.displayBoard(game.getBoard()));
                 } catch(ServerFacadeException | ClientControlException | BoardRendererException e) {
                     printError("ERROR: " + e.getMessage());
                 } catch (Exception e) {
                     printError("ERROR: we've encountered an error. Please try again later.");
                 }
-                var renderer = new BoardRenderer(parameters[2]);
-                printLine(renderer.displayBoard(game.getBoard()));
                 return;
             case "observe":
-                return;
-            case "logout":
+                if (!validateParameters(2, parameters.length)){
+                    return;
+                }
+                try {
+                    var game = controller.findGame(parameters[1]);
+                    printLine("Joined game successfully!");
+                    var renderer = new BoardRenderer("WHITE");
+                    printLine(renderer.displayBoard(game.game().getBoard()));
+                } catch(ServerFacadeException | ClientControlException | BoardRendererException e) {
+                    printError("ERROR: " + e.getMessage());
+                } catch (Exception e) {
+                    printError("ERROR: we've encountered an error. Please try again later.");
+                }            case "logout":
                 try {
                     controller.logout();
                     printLine("Logged out.");
@@ -153,6 +167,7 @@ public class Repl {
                 } catch (Exception e) {
                     printError("ERROR: we've encountered an error. Please try again later.");
                 }
+                return;
             case "quit":
                 controller.quit();
                 return;

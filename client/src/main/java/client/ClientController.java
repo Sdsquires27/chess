@@ -42,7 +42,7 @@ public class ClientController{
             throw new ClientControlException("requested game does not exist.");
         }
         var game = games.get(id - 1);
-        facade.joinGame(color, String.valueOf(game.gameID()));
+        facade.joinGame(color.toUpperCase(), String.valueOf(game.gameID()));
         return game.game();
     }
 
@@ -52,6 +52,20 @@ public class ClientController{
 
     public List<GameData> listGames() {
         return new ArrayList<>(facade.listGames());
+    }
+
+    public GameData findGame(String idString) {
+        int id;
+        try {
+            id = Integer.parseInt(idString);
+        } catch (NumberFormatException e) {
+            throw new ClientControlException("invalid number input.");
+        }
+        var games = listGames();
+        if (id > games.size()) {
+            throw new ClientControlException("requested game does not exist.");
+        }
+        return games.get(id - 1);
     }
 
     public void logout() {
