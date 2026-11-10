@@ -124,11 +124,20 @@ public class Repl {
                 }
                 return;
             case "join":
-                return;
+                if (!validateParameters(3, parameters.length)){
+                    return;
+                }
             case "observe":
                 return;
             case "logout":
-                return;
+                try {
+                    controller.logout();
+                    printLine("Logged out.");
+                } catch (ServerFacadeException e){
+                    printError("ERROR: " + e.getMessage());
+                } catch (Exception e) {
+                    printError("ERROR: we've encountered an error. Please try again later.");
+                }
             case "quit":
                 controller.quit();
                 return;

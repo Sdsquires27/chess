@@ -24,6 +24,9 @@ public class ClientController{
     }
 
     public void quit(){
+        if (state == State.SIGNED_IN) {
+            facade.logout();
+        }
         state = State.QUIT;
     }
 
@@ -33,5 +36,10 @@ public class ClientController{
 
     public List<GameData> listGames() {
         return new ArrayList<>(facade.listGames());
+    }
+
+    public void logout() {
+        facade.logout();
+        state = State.SIGNED_OUT;
     }
 }
