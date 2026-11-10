@@ -2,8 +2,6 @@ package client;
 
 import java.util.Scanner;
 
-import chess.ChessGame;
-import model.GameData;
 import ui.EscapeSequences;
 
 public class Repl {
@@ -41,7 +39,7 @@ public class Repl {
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 return;
             case "register":
-                if (!validateParameters(4, parameters.length)){
+                if (invalidParameters(4, parameters.length)){
                     return;
                 }
                 try {
@@ -52,7 +50,7 @@ public class Repl {
                 }
                 return;
             case "login":
-                if (!validateParameters(3, parameters.length)){
+                if (invalidParameters(3, parameters.length)){
                     return;
                 }
                 try {
@@ -93,7 +91,7 @@ public class Repl {
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 return;
             case "create":
-                if (!validateParameters(2, parameters.length)){
+                if (invalidParameters(2, parameters.length)){
                     return;
                 }
                 try {
@@ -151,7 +149,7 @@ public class Repl {
     }
 
     private void join(String[] parameters) {
-        if (!validateParameters(3, parameters.length)){
+        if (invalidParameters(3, parameters.length)){
             return;
         }
         var renderer = new BoardRenderer(parameters[2]);
@@ -161,7 +159,7 @@ public class Repl {
     }
 
     private void observe(String[] parameters) {
-        if (!validateParameters(2, parameters.length)){
+        if (invalidParameters(2, parameters.length)){
             return;
         }
         var game = controller.findGame(parameters[1]);
@@ -190,13 +188,13 @@ public class Repl {
         }
     }
 
-    private static boolean validateParameters(int minParameters, int numParameters) {
+    private static boolean invalidParameters(int minParameters, int numParameters) {
         if (numParameters < minParameters) {
             printError(String.format(
                     "ERROR: please input %s parameters. Type help for more information.", minParameters));
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private static void printError(String line){

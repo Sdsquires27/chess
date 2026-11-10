@@ -70,7 +70,7 @@ public class BoardRenderer {
                     i % 2 == 0 ? " %s  " : " %s ",
                     boardChars[8 - i]));
         }
-        builder.append(EscapeSequences.EMPTY).append(EscapeSequences.SET_BG_COLOR_BLACK).append("\n");
+        builder.append(EscapeSequences.EMPTY).append("\n");
 
         return builder.toString();
     }
