@@ -4,20 +4,19 @@ import java.util.Scanner;
 import ui.EscapeSequences;
 
 public class Repl {
-    State state = State.SIGNED_OUT;
     Scanner scanner = new Scanner(System.in);
-    ServerFacade facade;
+    ClientController controller;
 
-    Repl(ServerFacade facade) {
-        this.facade = facade;
+    Repl(ClientController controller) {
+        this.controller = controller;
     }
 
     public void run() {
         resetTextColors();
         System.out.println("Welcome to Chess! Type help for a list of commands.");
-        while(!state.equals(State.QUIT)){
+        while(!controller.state.equals(State.QUIT)){
             String input = scanner.nextLine();
-            if (state.equals(State.SIGNED_OUT)){
+            if (controller.state.equals(State.SIGNED_OUT)){
                 handlePreLoginInput(input);
             } else {
                 handlePostLoginInput(input);
@@ -39,29 +38,23 @@ public class Repl {
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 return;
             case "register":
-                if (parameters.length < 4) {
-                    printError("ERROR: please input four parameters. Type help for more information.");
+                if (!validateParameters(4, parameters.length)){
                     return;
                 }
                 try {
-                    facade.register(parameters[1], parameters[2], parameters[3]);
+                    controller.register(parameters[1], parameters[2], parameters[3]);
                     printLine("Logged in as %s", parameters[1]);
-                    state = State.SIGNED_IN;
-                } catch (ServerFacadeException e){
-                    printError("ERROR: " + e.getMessage());
                 } catch (Exception e) {
-                    printError("ERROR: we've encountered an error. Please try again later.");
+                    printError("ERROR: " + e.getMessage());
                 }
                 return;
             case "login":
-                if (parameters.length < 3) {
-                    printError("ERROR: please input three parameters. Type help for more information.");
+                if (!validateParameters(3, parameters.length)){
                     return;
                 }
                 try {
-                    facade.login(parameters[1], parameters[2]);
+                    controller.login(parameters[1], parameters[2]);
                     printLine("Logged in as %s", parameters[1]);
-                    state = State.SIGNED_IN;
                 } catch (ServerFacadeException e){
                     printError("ERROR: " + e.getMessage());
                 } catch (Exception e) {
@@ -69,8 +62,8 @@ public class Repl {
                 }
                 return;
             case "quit":
-                state = State.QUIT;
-                System.out.println("Bye!");
+                controller.quit();
+                printLine("Bye!");
                 return;
             default:
                 printError("ERROR: command not recognized. Type help for a list of commands.");
@@ -97,8 +90,38 @@ public class Repl {
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 return;
             case "create":
+                if (!validateParameters(2, parameters.length)){
+                    return;
+                }
+                try {
+                    controller.create(parameters[1]);
+                    printLine("Created game %s", parameters[1]);
+                } catch (ServerFacadeException e){
+                    printError("ERROR: " + e.getMessage());
+                } catch (Exception e) {
+                    printError("ERROR: we've encountered an error. Please try again later.");
+                }
                 return;
             case "list":
+                try {
+                    var games = controller.listGames();
+                    printLine("Current games:");
+                    for (var i = 0; i < games.size(); i++) {
+                        var game = games.get(i);
+                        printLine("%s%s.%s - %s; %sWHITE: %s | BLACK: %s",
+                                EscapeSequences.SET_TEXT_COLOR_BLUE,
+                                i + 1,
+                                EscapeSequences.SET_TEXT_COLOR_BLACK,
+                                game.gameName(),
+                                EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY,
+                                game.whiteUsername() == null ? "" : game.whiteUsername(),
+                                game.blackUsername() == null ? "" : game.blackUsername());
+                    }
+                } catch (ServerFacadeException e){
+                    printError("ERROR: " + e.getMessage());
+                } catch (Exception e) {
+                    printError("ERROR: we've encountered an error. Please try again later.");
+                }
                 return;
             case "join":
                 return;
@@ -107,10 +130,20 @@ public class Repl {
             case "logout":
                 return;
             case "quit":
+                controller.quit();
                 return;
             default:
-                return;
+                printError("ERROR: command not recognized. Type help for a list of commands.");
         }
+    }
+
+    private static boolean validateParameters(int minParameters, int numParameters) {
+        if (numParameters < minParameters) {
+            printError(String.format(
+                    "ERROR: please input %s parameters. Type help for more information.", minParameters));
+            return false;
+        }
+        return true;
     }
 
     private static void printError(String line){

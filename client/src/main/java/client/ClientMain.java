@@ -5,6 +5,6 @@ import chess.*;
 public class ClientMain {
     public static void main(String[] args) {
         System.out.println("♕ 240 Chess Client");
-        new Repl(new HTTPServerFacade(8080)).run();
+        new Repl(new ClientController(new HTTPServerFacade(8080))).run();
     }
 }
