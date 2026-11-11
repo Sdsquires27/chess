@@ -13,5 +13,4 @@ public interface ServerFacade {
     public void logout() throws ServerFacadeException;
     public void createGame(String gameName) throws ServerFacadeException;
     public void joinGame(String color, String gameID) throws ServerFacadeException;
-    public void onMessage(String message) throws ServerFacadeException;
 }

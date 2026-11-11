@@ -27,7 +27,7 @@ public class ServerFacadeTests {
     @BeforeEach
     void resetDatabase(){
         try {
-            HTTPServerFacade.delete(port, "/db");
+            HTTPCommunicator.delete(port, "/db");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -36,7 +36,7 @@ public class ServerFacadeTests {
     @AfterAll
     static void stopServer() {
         try {
-            HTTPServerFacade.delete(port, "/db");
+            HTTPCommunicator.delete(port, "/db");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -107,17 +107,6 @@ public class ServerFacadeTests {
         assertDoesNotThrow(() -> facade.joinGame("WHITE", String.valueOf(game.gameID())));
         assertDoesNotThrow(() -> facade.logout());
         assertThrows(ServerFacadeException.class, () -> facade.joinGame("BLACK", String.valueOf(game.gameID())));
-    }
-
-    @Test
-    public void onMessage() {
-        observer.reset();
-        NotificationMessage notificationMessage = new NotificationMessage(
-                ServerMessage.ServerMessageType.NOTIFICATION,"Test");
-        Gson gson = new Gson();
-        assertThrows(ServerFacadeException.class, () -> facade.onMessage("Test"));
-        assertDoesNotThrow(() -> facade.onMessage(gson.toJson(notificationMessage)));
-        assertEquals(notificationMessage, observer.message);
     }
 
 }

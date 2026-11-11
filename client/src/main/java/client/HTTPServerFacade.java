@@ -7,22 +7,20 @@ import com.google.gson.JsonSyntaxException;
 import model.GameData;
 import websocket.messages.*;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.*;
+
+import static client.HTTPCommunicator.*;
 
 public class HTTPServerFacade implements ServerFacade{
         int port;
         String authToken;
         Observer observer;
+        WebSocketCommunicator webSocketCommunicator;
 
-        private static final HttpClient HTTP_CLIENT =  HttpClient.newHttpClient();
         public HTTPServerFacade(int port, Observer observer){
             this.port = port;
             this.observer = observer;
+            webSocketCommunicator = new WebSocketCommunicator(observer);
 
         }
         static class AuthResponse {
@@ -117,101 +115,6 @@ public class HTTPServerFacade implements ServerFacade{
             put(port, "/game", body, "authorization", authToken);
         } catch(Exception e) {
             joinOrCreateException(e);
-        }
-    }
-
-    @Override
-    public void onMessage(String message) throws ServerFacadeException {
-            try {
-                var serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                observer.notify(serverMessage);
-            } catch (JsonSyntaxException e) {
-                throw new ServerFacadeException("Could not parse message");
-            }
-
-    }
-
-    static String get(int port, String path, String... headers) throws Exception{
-            String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
-
-            var builder = HttpRequest.newBuilder()
-                    .uri(new URI(url))
-                    .timeout(Duration.ofMillis(5000))
-                    .GET();
-
-            if (headers != null && headers.length > 0){
-                builder.headers(headers);
-            }
-            HttpRequest request = builder.build();
-
-            HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                return response.body();
-            } else {
-                throw new Exception(String.valueOf(response.statusCode()));
-            }
-        }
-
-    static String delete(int port, String path, String... headers) throws Exception{
-        String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
-
-        var builder = HttpRequest.newBuilder()
-                .uri(new URI(url))
-                .timeout(Duration.ofMillis(5000))
-                .DELETE();
-
-        if (headers != null && headers.length > 0){
-            builder.headers(headers);
-        }
-        HttpRequest request = builder.build();
-
-        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-            return response.body();
-        } else {
-            throw new Exception(String.valueOf(response.statusCode()));
-        }
-    }
-
-    static String post(int port, String path, Map<String, String> body, String... headers) throws Exception{
-        String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
-
-        var builder = HttpRequest.newBuilder()
-                .uri(new URI(url))
-                .timeout(Duration.ofMillis(5000))
-                .POST(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)));
-
-        if (headers != null && headers.length > 0){
-            builder.headers(headers);
-        }
-        HttpRequest request = builder.build();
-
-        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-            return response.body();
-        } else {
-            throw new Exception(String.valueOf(response.statusCode()));
-        }
-    }
-
-    static String put(int port, String path, Map<String, String> body, String... headers) throws Exception{
-        String url = String.format(Locale.getDefault(), "http://localhost:%d%s", port, path);
-
-        var builder = HttpRequest.newBuilder()
-                .uri(new URI(url))
-                .timeout(Duration.ofMillis(5000))
-                .PUT(HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)));
-
-        if (headers != null && headers.length > 0){
-            builder.headers(headers);
-        }
-        HttpRequest request = builder.build();
-
-        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() >= 200 && response.statusCode() < 300) {
-            return response.body();
-        } else {
-            throw new Exception(String.valueOf(response.statusCode()));
         }
     }
 }
