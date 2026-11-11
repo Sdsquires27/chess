@@ -17,10 +17,10 @@ public class HTTPServerFacade implements ServerFacade{
         Observer observer;
         WebSocketCommunicator webSocketCommunicator;
 
-        public HTTPServerFacade(int port, Observer observer){
+        public HTTPServerFacade(int port, Observer observer) throws Exception {
             this.port = port;
             this.observer = observer;
-            webSocketCommunicator = new WebSocketCommunicator(observer);
+            webSocketCommunicator = new WebSocketCommunicator(observer, port);
 
         }
         static class AuthResponse {

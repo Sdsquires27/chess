@@ -13,7 +13,7 @@ import java.util.List;
 public class ClientController implements Observer{
     private final ServerFacade facade;
     public State state;
-    public ClientController(int port) {
+    public ClientController(int port) throws Exception {
         this.facade = new HTTPServerFacade(port, this);
         state = State.SIGNED_OUT;
     }

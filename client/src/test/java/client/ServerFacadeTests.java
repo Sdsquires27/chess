@@ -20,7 +20,7 @@ public class ServerFacadeTests {
     public static void init() {
         server = new Server();
         port = server.run(0);
-        facade = new HTTPServerFacade(port, observer);
+        facade = assertDoesNotThrow(() -> new HTTPServerFacade(port, observer));
         System.out.println("Started test HTTP server on " + port);
     }
 
