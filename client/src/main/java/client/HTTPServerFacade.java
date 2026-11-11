@@ -103,6 +103,8 @@ public class HTTPServerFacade implements ServerFacade{
                 throw new ServerFacadeException("Bad request");
             case "401":
                 throw new ServerFacadeException("Invalid authorization");
+            case "403":
+                throw new ServerFacadeException("Spot already taken");
             default:
                 throw new ServerFacadeException("Server responded with error");
         }

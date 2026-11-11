@@ -11,7 +11,7 @@ public class BoardRenderer {
         BLACK
     }
     final static String BOARD_COLOR_LIGHT = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
-    final static String BOARD_COLOR_DARK = EscapeSequences.SET_BG_COLOR_DARK_GREY;
+    final static String BOARD_COLOR_DARK = EscapeSequences.SET_BG_COLOR_DARK_GREEN;
     final static String PIECE_COLOR_WHITE = EscapeSequences.SET_TEXT_COLOR_WHITE;
     final static String PIECE_COLOR_BLACK = EscapeSequences.SET_TEXT_COLOR_BLACK;
 
@@ -42,9 +42,11 @@ public class BoardRenderer {
         int i_start = color == Color.BLACK ? 1 : 8;
         int i_end = color == Color.BLACK ? 8 : 1;
         int increment = color == Color.BLACK ? 1 : -1;
+        int j_start = color == Color.WHITE ? 0 : 7;
+        int j_end = color == Color.WHITE ? 7 : 0;
         for (int i = i_start; increment > 0 ? i <= i_end : i >= i_end; i += increment) {
             builder.append(String.format(
-                    i % 2 == 0 ? " %s  " : " %s ",
+                   " %s ",
                     boardChars[8 - i]));
         }
         builder.append(EscapeSequences.EMPTY).append("\n");
@@ -53,12 +55,11 @@ public class BoardRenderer {
         for (int i = i_start; increment > 0 ? i <= i_end : i >= i_end; i += increment) {
             builder.append(EscapeSequences.SET_BG_COLOR_WHITE + EscapeSequences.SET_TEXT_COLOR_BLACK)
                     .append(String.format(" %s ", i));
-            for (int j = 0; j < 8; j ++) {
+            for (int j = j_start; increment < 0 ? j < j_end : j > j_end; j += (increment * -1) ) {
                 builder.append(curBackground).append(
                         displayPiece(board.getPiece(new ChessPosition(i, j + 1))));
                 curBackground = curBackground.equals(BOARD_COLOR_DARK) ? BOARD_COLOR_LIGHT : BOARD_COLOR_DARK;
             }
-            curBackground = curBackground.equals(BOARD_COLOR_DARK) ? BOARD_COLOR_LIGHT : BOARD_COLOR_DARK;
             builder.append(EscapeSequences.SET_BG_COLOR_WHITE + EscapeSequences.SET_TEXT_COLOR_BLACK)
                     .append(String.format(" %s ", i))
                     .append("\n");
@@ -67,7 +68,7 @@ public class BoardRenderer {
         builder.append(EscapeSequences.SET_BG_COLOR_WHITE + EscapeSequences.EMPTY);
         for (int i = i_start; increment > 0 ? i <= i_end : i >= i_end; i += increment) {
             builder.append(String.format(
-                    i % 2 == 0 ? " %s  " : " %s ",
+                    " %s ",
                     boardChars[8 - i]));
         }
         builder.append(EscapeSequences.EMPTY).append("\n");

@@ -42,7 +42,7 @@ public class ClientController implements Observer{
             throw new ClientControlException("invalid number input.");
         }
         var games = listGames();
-        if (id > games.size()) {
+        if (id > games.size() || id < 1) {
             throw new ClientControlException("requested game does not exist.");
         }
         var game = games.get(id - 1);
