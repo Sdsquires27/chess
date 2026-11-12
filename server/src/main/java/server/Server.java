@@ -8,6 +8,7 @@ import dataaccess.sql.SQLDataAccess;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.AuthData;
+import server.websocket.WebSocketHandler;
 import service.*;
 import service.requests.*;
 
@@ -19,6 +20,7 @@ public class Server {
     private final GameService gameService;
     private final AuthService authService;
     private final UserService userService;
+    private final WebSocketHandler webSocketHandler;
 
     public Server() {
         DataAccess dataAccess;
@@ -30,6 +32,7 @@ public class Server {
         gameService = new GameService(dataAccess);
         userService = new UserService(dataAccess);
         authService = new AuthService(dataAccess);
+        webSocketHandler = new WebSocketHandler();
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", this::register)
                 .post("/session", this::login)
@@ -38,6 +41,11 @@ public class Server {
                 .post("/game", this::createGame)
                 .put("/game", this::joinGame)
                 .delete("/db", this::clearDB)
+                .ws("/ws", ws -> {
+                    ws.onConnect(webSocketHandler);
+                    ws.onMessage(webSocketHandler);
+                    ws.onClose(webSocketHandler);
+                })
                 .exception(InvalidInputException.class,
                         (exception, ctx) -> exceptionHandler(400, "bad request", ctx))
                 .exception(DataAccessException.class,
