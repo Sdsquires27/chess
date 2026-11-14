@@ -5,6 +5,8 @@ import io.javalin.websocket.*;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.UserGameCommand;
 import org.eclipse.jetty.websocket.api.Session;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -34,7 +36,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(UserGameCommand command, Session session) {
-        connections.join(String.valueOf(command.getGameID()), session);
+        var gameID = String.valueOf(command.getGameID());
+        connections.join(gameID, session);
+        /*
+         ServerMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                 "Player ");
+        connections.broadcast(session, )
+         */
     }
 
     private void makeMove(UserGameCommand command, Session session) {
