@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import io.javalin.websocket.*;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.UserGameCommand;
+import org.eclipse.jetty.websocket.api.Session;
+
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -24,26 +26,26 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void handleMessage(@NotNull WsMessageContext wsMessageContext) throws Exception {
         UserGameCommand command = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
         switch (command.getCommandType()) {
-            case CONNECT -> connect(command);
-            case MAKE_MOVE -> makeMove(command);
-            case LEAVE -> leave(command);
-            case RESIGN -> resign(command);
+            case CONNECT -> connect(command, wsMessageContext.session);
+            case MAKE_MOVE -> makeMove(command, wsMessageContext.session);
+            case LEAVE -> leave(command, wsMessageContext.session);
+            case RESIGN -> resign(command, wsMessageContext.session);
         }
     }
 
-    private void connect(UserGameCommand command) {
+    private void connect(UserGameCommand command, Session session) {
+        connections.join(String.valueOf(command.getGameID()), session);
+    }
+
+    private void makeMove(UserGameCommand command, Session session) {
 
     }
 
-    private void makeMove(UserGameCommand command) {
+    private void leave(UserGameCommand command, Session session) {
 
     }
 
-    private void leave(UserGameCommand command ) {
-
-    }
-
-    private void resign(UserGameCommand command ) {
+    private void resign(UserGameCommand command, Session session) {
 
     }
 }
