@@ -73,4 +73,8 @@ public class GameService extends ChessService{
         }
         dataAccess.updateGame(id, newGame);
     }
+
+    public GameData findGame(FindGameRequest request) throws DataAccessException {
+        return dataAccess.findGame(request.gameID());
+    }
 }

@@ -51,5 +51,9 @@ public class UserService extends ChessService{
         dataAccess.deleteSession(request);
     }
 
+    public String findUser(AuthTokenRequest request) throws DataAccessException, UnauthorizedException {
+        return dataAccess.findUser(request);
+    }
+
 
 }
