@@ -1,6 +1,7 @@
 package server.websocket;
 
-import chess.ChessGame;
+import chess.*;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import io.javalin.websocket.*;
@@ -49,10 +50,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     @Override
     public void handleMessage(@NotNull WsMessageContext wsMessageContext) throws Exception {
         UserGameCommand command = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
+        MakeMoveCommand moveCommand = null;
+        if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE) {
+            moveCommand = new Gson().fromJson(wsMessageContext.message(), MakeMoveCommand.class);
+        }
         try {
             switch (command.getCommandType()) {
                 case CONNECT -> connect(command, wsMessageContext.session);
-                case MAKE_MOVE -> makeMove(command, wsMessageContext.session);
+                case MAKE_MOVE -> makeMove(moveCommand, wsMessageContext.session);
                 case LEAVE -> leave(command, wsMessageContext.session);
                 case RESIGN -> resign(command, wsMessageContext.session);
             }
@@ -64,6 +69,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             sendError(new Error(e.getMessage()), wsMessageContext.session);
         } catch (UnauthorizedException e) {
             sendError(new Error("unable to authenticate user"), wsMessageContext.session);
+        } catch (InvalidMoveException e) {
+            sendError(new Error("invalid move"), wsMessageContext.session);
         }
     }
 
@@ -98,8 +105,62 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void makeMove(UserGameCommand command, Session session) {
+    private void makeMove(MakeMoveCommand command, Session session) throws DataAccessException,
+            WebSocketException, InvalidMoveException, IOException {
+        var user = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
+        var gameData = gameService.findGame(new FindGameRequest(command.getGameID()));
+        var game = getGame(gameData, user);
+        if (game.state != ChessGame.GameState.ONGOING) {
+            throw new WebSocketException("Game is no longer ongoing");
+        }
+        var move = command.getMove();
+        game.makeMove(move);
 
+        gameService.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
+                gameData.blackUsername(), gameData.gameName(), game));
+        connections.broadcast(null, new LoadGameMessage(
+                ServerMessage.ServerMessageType.LOAD_GAME, game),
+                String.valueOf(gameData.gameID()));
+        connections.broadcast(session, new NotificationMessage(
+                ServerMessage.ServerMessageType.NOTIFICATION, "Move " + moveName(move)
+                ), String.valueOf(gameData.gameID()));
+        if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+            game.state = ChessGame.GameState.WHITE_VICTORY;
+            connections.broadcast(null, new NotificationMessage(
+               ServerMessage.ServerMessageType.NOTIFICATION, "Black has won!"
+            ), String.valueOf(gameData.gameID()));
+        }
+        if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+            game.state = ChessGame.GameState.BLACK_VICTORY;
+            connections.broadcast(null, new NotificationMessage(
+                    ServerMessage.ServerMessageType.NOTIFICATION, "White has won!"
+            ), String.valueOf(gameData.gameID()));
+        }
+    }
+
+    private String moveName(ChessMove move) {
+        StringBuilder moveName = new StringBuilder();
+        for (var position : new ChessPosition[] {move.getStartPosition(), move.getEndPosition()}){
+            moveName.append(Character.forDigit(position.getRow() + 1, 10));
+            moveName.append(position.getColumn() + 1);
+        }
+
+        return moveName.toString();
+    }
+
+    private static ChessGame getGame(GameData gameData, String user) throws WebSocketException {
+        String playerColor = gameData.blackUsername().equals(user) ?
+                "black" : gameData.whiteUsername().equals(user) ?
+                "white" : "observer";
+        if (playerColor.equals("observer")) {
+            throw new WebSocketException("Observers cannot make moves.");
+        }
+        var game = gameData.game();
+        if ((game.getTeamTurn() == ChessGame.TeamColor.BLACK && !playerColor.equals("black")) ||
+                (game.getTeamTurn() == ChessGame.TeamColor.WHITE && !playerColor.equals("white"))) {
+            throw new WebSocketException("Move cannot be made outside of player turn.");
+        }
+        return game;
     }
 
     private void leave(UserGameCommand command, Session session) throws DataAccessException, IOException {
@@ -123,7 +184,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 String.valueOf(game.gameID()));
     }
 
-    private void resign(UserGameCommand command, Session session) throws DataAccessException, IOException, WebSocketException {
+    private void resign(UserGameCommand command, Session session) throws DataAccessException,
+            IOException, WebSocketException {
         var user = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
         var game = gameService.findGame(new FindGameRequest(command.getGameID()));
         String playerColor = Objects.equals(game.blackUsername(), user) ?
