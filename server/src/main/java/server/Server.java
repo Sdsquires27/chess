@@ -32,7 +32,7 @@ public class Server {
         gameService = new GameService(dataAccess);
         userService = new UserService(dataAccess);
         authService = new AuthService(dataAccess);
-        webSocketHandler = new WebSocketHandler();
+        webSocketHandler = new WebSocketHandler(userService, gameService);
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", this::register)
                 .post("/session", this::login)

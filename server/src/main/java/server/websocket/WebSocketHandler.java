@@ -1,8 +1,10 @@
 package server.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import io.javalin.websocket.*;
+import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import service.GameService;
 import service.UserService;
@@ -13,6 +15,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.*;
 
 import java.io.IOException;
+import java.util.Objects;
 
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -63,7 +66,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.send(session,
                 new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
          ServerMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                 "Player " + username + " joined as " + command.getColor().toString().toLowerCase());
+                 "Player " + username + " joined as " + command.getRole());
         connections.broadcast(session, message, gameID);
     }
 
@@ -85,7 +88,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     }
 
-    private void resign(UserGameCommand command, Session session) {
-
+    private void resign(UserGameCommand command, Session session) throws DataAccessException, IOException {
+        var user = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
+        var game = gameService.findGame(new FindGameRequest(command.getGameID()));
+        var playerColor = Objects.equals(game.blackUsername(), user) ?
+                ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+        var victor = playerColor.equals(ChessGame.TeamColor.BLACK) ?
+                ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
+        game.game().state = playerColor == ChessGame.TeamColor.BLACK ?
+                ChessGame.GameState.WHITE_VICTORY : ChessGame.GameState.BLACK_VICTORY;
+        gameService.updateGame(new GameData(game.gameID(), game.whiteUsername(), game.blackUsername(),
+                game.gameName(), game.game()));
+        connections.broadcast(null, new NotificationMessage(
+                ServerMessage.ServerMessageType.NOTIFICATION, user + " resigned. " + victor + " wins!"),
+                String.valueOf(command.getGameID()));
     }
 }

@@ -20,6 +20,13 @@ public class ChessGame {
     private TeamColor teamTurn;
     private HashMap<ChessPosition, TeamColor> canCastle = new HashMap<>();
     private ChessPosition enPassant = null;
+    public GameState state;
+    public enum GameState {
+        BLACK_VICTORY,
+        WHITE_VICTORY,
+        DRAW,
+        ONGOING
+    }
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
@@ -28,7 +35,7 @@ public class ChessGame {
         canCastle.put(new ChessPosition(1, 8), TeamColor.WHITE);
         canCastle.put(new ChessPosition(8, 1), TeamColor.BLACK);
         canCastle.put(new ChessPosition(8, 8), TeamColor.BLACK);
-
+        state = GameState.ONGOING;
     }
 
     /**

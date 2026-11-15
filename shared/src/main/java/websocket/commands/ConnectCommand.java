@@ -3,13 +3,13 @@ package websocket.commands;
 import chess.ChessGame;
 
 public class ConnectCommand extends UserGameCommand {
-    private final ChessGame.TeamColor color;
-    public ConnectCommand(CommandType commandType, String authToken, Integer gameID, ChessGame.TeamColor color) {
+    private final String role;
+    public ConnectCommand(CommandType commandType, String authToken, Integer gameID, String role) {
         super(commandType, authToken, gameID);
-        this.color = color;
+        this.role = role;
     }
 
-    public ChessGame.TeamColor getColor() {
-        return color;
+    public String getRole() {
+        return role;
     }
 }
