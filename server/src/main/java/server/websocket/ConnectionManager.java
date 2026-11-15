@@ -33,7 +33,8 @@ public class ConnectionManager {
 
     public void send(Session session, ServerMessage message) throws IOException {
         if (session.isOpen()) {
-            session.getRemote().sendString(new Gson().toJson(message));
+            var stringMessage = new Gson().toJson(message);
+            session.getRemote().sendString(stringMessage);
         }
     }
 }

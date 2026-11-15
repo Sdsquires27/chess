@@ -7,6 +7,7 @@ import io.javalin.websocket.*;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import service.GameService;
+import service.UnauthorizedException;
 import service.UserService;
 import service.requests.AuthTokenRequest;
 import service.requests.FindGameRequest;
@@ -20,6 +21,11 @@ import java.util.Objects;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
+    private static class WebSocketException extends Exception {
+        public WebSocketException(String message) {
+            super(message);
+        }
+    }
     private final ConnectionManager connections = new ConnectionManager();
     UserService userService;
     GameService gameService;
@@ -36,7 +42,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleConnect(@NotNull WsConnectContext wsConnectContext) throws Exception {
-        System.out.println("WebSocket connexted");
+        System.out.println("WebSocket connected");
         wsConnectContext.enableAutomaticPings();
     }
 
@@ -54,14 +60,25 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             sendError(new Error("unable to access data"), wsMessageContext.session);
         } catch (IOException e) {
             sendError(new Error("encountered error sending data"), wsMessageContext.session);
+        } catch (WebSocketException e) {
+            sendError(new Error(e.getMessage()), wsMessageContext.session);
+        } catch (UnauthorizedException e) {
+            sendError(new Error("unable to authenticate user"), wsMessageContext.session);
         }
     }
 
-    private void connect(UserGameCommand command, Session session) throws DataAccessException, IOException {
+    private void connect(UserGameCommand command, Session session) throws DataAccessException, IOException,
+            WebSocketException {
         var gameID = String.valueOf(command.getGameID());
         var username = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
+        if (username == null) {
+            throw new UnauthorizedException();
+        }
         connections.join(gameID, session);
         var game = gameService.findGame(new FindGameRequest(command.getGameID()));
+        if (game == null) {
+            throw new WebSocketException("invalid game ID");
+        }
         connections.send(session,
                 new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
         String color = Objects.equals(game.blackUsername(), username) ? "black." :
@@ -73,9 +90,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void sendError(Error error, Session session) {
         try {
-            connections.send(session,
-                    new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
-                            error.getMessage()));
+            var errorMessage = new ErrorMessage(ServerMessage.ServerMessageType.ERROR,
+                    error.getMessage());
+            connections.send(session, errorMessage);
         } catch (IOException e){
             System.out.println("Unable to send message");
         }
@@ -89,14 +106,21 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     }
 
-    private void resign(UserGameCommand command, Session session) throws DataAccessException, IOException {
+    private void resign(UserGameCommand command, Session session) throws DataAccessException, IOException, WebSocketException {
         var user = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
         var game = gameService.findGame(new FindGameRequest(command.getGameID()));
-        var playerColor = Objects.equals(game.blackUsername(), user) ?
-                ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-        var victor = playerColor.equals(ChessGame.TeamColor.BLACK) ?
-                ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
-        game.game().state = playerColor == ChessGame.TeamColor.BLACK ?
+        String playerColor = Objects.equals(game.blackUsername(), user) ?
+                "black" : Objects.equals(game.whiteUsername(), user) ?
+                "white" : "observer";
+        if (playerColor.equals("observer")) {
+            throw new WebSocketException("Observers cannot resign.");
+        }
+        var victor = playerColor.equals("black") ?
+                "white" : "black";
+        if (game.game().state != ChessGame.GameState.ONGOING) {
+            throw new WebSocketException("Game is over; player cannot resign");
+        }
+        game.game().state = playerColor.equals("white") ?
                 ChessGame.GameState.WHITE_VICTORY : ChessGame.GameState.BLACK_VICTORY;
         gameService.updateGame(new GameData(game.gameID(), game.whiteUsername(), game.blackUsername(),
                 game.gameName(), game.game()));
