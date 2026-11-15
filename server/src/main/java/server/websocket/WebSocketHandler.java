@@ -57,16 +57,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void connect(UserGameCommand userGameCommand, Session session) throws DataAccessException, IOException {
-        ConnectCommand command = (ConnectCommand) userGameCommand;
+    private void connect(UserGameCommand command, Session session) throws DataAccessException, IOException {
         var gameID = String.valueOf(command.getGameID());
         var username = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
         connections.join(gameID, session);
         var game = gameService.findGame(new FindGameRequest(command.getGameID()));
         connections.send(session,
                 new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
+        String color = Objects.equals(game.blackUsername(), username) ? "black." :
+                Objects.equals(game.whiteUsername(), username) ? "white." : "an observer.";
          ServerMessage message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                 "Player " + username + " joined as " + command.getRole());
+                 "Player " + username + " joined as " + color);
         connections.broadcast(session, message, gameID);
     }
 
