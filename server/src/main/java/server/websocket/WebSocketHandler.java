@@ -102,8 +102,25 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     }
 
-    private void leave(UserGameCommand command, Session session) {
-
+    private void leave(UserGameCommand command, Session session) throws DataAccessException, IOException {
+        var user = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
+        var game = gameService.findGame(new FindGameRequest(command.getGameID()));
+        String playerColor = Objects.equals(game.blackUsername(), user) ?
+                "black" : Objects.equals(game.whiteUsername(), user) ?
+                "white" : "observer";
+        if (playerColor.equals("black")) {
+            game = new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(),
+                    game.game());
+        } else if (playerColor.equals("white")) {
+            game = new GameData(game.gameID(), null, game.blackUsername(), game.gameName(),
+                    game.game());
+        }
+        gameService.updateGame(game);
+        connections.leave(String.valueOf(game.gameID()), session);
+        connections.broadcast(session,
+                new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                        user + " has left the game."),
+                String.valueOf(game.gameID()));
     }
 
     private void resign(UserGameCommand command, Session session) throws DataAccessException, IOException, WebSocketException {
