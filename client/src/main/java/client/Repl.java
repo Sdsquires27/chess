@@ -19,8 +19,10 @@ public class Repl {
             String input = scanner.nextLine();
             if (controller.state.equals(State.SIGNED_OUT)){
                 handlePreLoginInput(input);
-            } else {
+            } else if (controller.state.equals(State.SIGNED_IN)) {
                 handlePostLoginInput(input);
+            } else if (controller.state.equals(State.IN_GAME)) {
+                handleInGameInput(input);
             }
         }
     }
@@ -147,6 +149,35 @@ public class Repl {
                 return;
             default:
                 printError("ERROR: command not recognized. Type help for a list of commands.");
+        }
+    }
+
+    private void handleInGameInput(String input) {
+        var parameters = input.split(" ");
+        switch (parameters[0].toLowerCase()) {
+            case "help":
+                printLine("redraw%s - to redraw the board",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                printLine("leave%s - to exit the game",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                printLine("move <POSITION> <POSITION>%s - to move a piece",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                printLine("resign%s - to forfeit the game",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                printLine("highlight <POSITION>%s - highlight legal moves for a piece",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                printLine("help%s - to list commands",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+            case "redraw":
+                throw new RuntimeException("Not implemented");
+            case "leave":
+                throw new RuntimeException("Not implemented");
+            case "move":
+                throw new RuntimeException("Not implemented");
+            case "resign":
+                throw new RuntimeException("Not implemented");
+            case "highlight":
+                throw new RuntimeException("Not implemented");
         }
     }
 

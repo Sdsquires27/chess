@@ -50,14 +50,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     @Override
     public void handleMessage(@NotNull WsMessageContext wsMessageContext) throws Exception {
         UserGameCommand command = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
-        MakeMoveCommand moveCommand = null;
-        if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE) {
-            moveCommand = new Gson().fromJson(wsMessageContext.message(), MakeMoveCommand.class);
-        }
         try {
             switch (command.getCommandType()) {
                 case CONNECT -> connect(command, wsMessageContext.session);
-                case MAKE_MOVE -> makeMove(moveCommand, wsMessageContext.session);
+                case MAKE_MOVE -> makeMove(new Gson().fromJson(wsMessageContext.message(), MakeMoveCommand.class), wsMessageContext.session);
                 case LEAVE -> leave(command, wsMessageContext.session);
                 case RESIGN -> resign(command, wsMessageContext.session);
             }

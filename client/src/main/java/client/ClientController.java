@@ -17,6 +17,7 @@ public class ClientController implements Observer{
         this.facade = new HTTPServerFacade(port, this);
         state = State.SIGNED_OUT;
     }
+
     public void register(String username, String password, String email) {
         facade.register(username, password, email);
         state = State.SIGNED_IN;
