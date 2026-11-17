@@ -112,14 +112,17 @@ public class ClientController implements Observer{
 
     @Override
     public void notify(ServerMessage message) {
-        System.out.println("Received notification");
-        switch (message.getServerMessageType()){
-            case ServerMessage.ServerMessageType.NOTIFICATION ->
-                    handleNotificationMessage((NotificationMessage) message);
-            case ServerMessage.ServerMessageType.LOAD_GAME ->
-                    handleLoadGameMessage((LoadGameMessage) message);
-            case ServerMessage.ServerMessageType.ERROR ->
-                    handleErrorMessage((ErrorMessage) message);
+        try {
+            switch (message.getServerMessageType()){
+                case ServerMessage.ServerMessageType.NOTIFICATION ->
+                        handleNotificationMessage((NotificationMessage) message);
+                case ServerMessage.ServerMessageType.LOAD_GAME ->
+                        handleLoadGameMessage((LoadGameMessage) message);
+                case ServerMessage.ServerMessageType.ERROR ->
+                        handleErrorMessage((ErrorMessage) message);
+            }
+        } catch (RuntimeException e) {
+            System.out.println(e.getMessage());
         }
     }
 

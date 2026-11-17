@@ -21,7 +21,7 @@ public class Repl implements ClientOutput {
 
     @Override
     public void sendNotification(String notification) {
-        printLine("%sNOTIFICATION: %s%s", EscapeSequences.SET_TEXT_COLOR_GREEN,
+        printLine("%sNOTIFICATION: %s%s", EscapeSequences.SET_TEXT_COLOR_BLUE,
                 EscapeSequences.SET_TEXT_COLOR_BLACK, notification);
     }
 
@@ -32,7 +32,9 @@ public class Repl implements ClientOutput {
 
     @Override
     public void sendGame(ChessGame game) {
+        printLine("Game sent");
         this.game = game;
+        printLine(renderer.displayBoard(game.getBoard()));
     }
 
     private static class ReplException extends Exception {
@@ -225,6 +227,9 @@ public class Repl implements ClientOutput {
                 } catch (ReplException e) {
                     printError(e.getMessage());
                 }
+                return;
+            default:
+                printError("ERROR: command not recognized. Type help for a list of commands.");
         }
     }
 
@@ -236,7 +241,6 @@ public class Repl implements ClientOutput {
         ChessMove move = new ChessMove(startPosition,
                 stringToPosition(parameters[2]), null);
         if (!game.validMoves(startPosition).contains(move)){
-            System.out.printf("%s, %s, %s%n", startPosition, move, game.validMoves(startPosition).toString());
             throw new ReplException("ERROR: invalid move");
         }
         controller.move(move);

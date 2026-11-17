@@ -39,11 +39,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     @Override
     public void handleClose(@NotNull WsCloseContext wsCloseContext) throws Exception {
         System.out.println("WebSocket closed");
+        String auth = connections.findAuth(wsCloseContext.session);
+        int gameID = Integer.parseInt(connections.findGameID(wsCloseContext.session));
+        var username = userService.findUser(new AuthTokenRequest(auth));
+        var game = gameService.findGame(new FindGameRequest(gameID));
+        gameService.updateGame(removePlayerFromGame(username, game));
     }
 
     @Override
     public void handleConnect(@NotNull WsConnectContext wsConnectContext) throws Exception {
-        System.out.println("WebSocket connected");
         wsConnectContext.enableAutomaticPings();
     }
 
@@ -77,7 +81,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         if (username == null) {
             throw new UnauthorizedException();
         }
-        connections.join(gameID, session);
+        connections.join(gameID, session, command.getAuthToken());
         var game = gameService.findGame(new FindGameRequest(command.getGameID()));
         if (game == null) {
             throw new WebSocketException("invalid game ID");
@@ -161,22 +165,27 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void leave(UserGameCommand command, Session session) throws DataAccessException, IOException {
         var user = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
         var game = gameService.findGame(new FindGameRequest(command.getGameID()));
-        String playerColor = Objects.equals(game.blackUsername(), user) ?
-                "black" : Objects.equals(game.whiteUsername(), user) ?
-                "white" : "observer";
-        if (playerColor.equals("black")) {
-            game = new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(),
-                    game.game());
-        } else if (playerColor.equals("white")) {
-            game = new GameData(game.gameID(), null, game.blackUsername(), game.gameName(),
-                    game.game());
-        }
-        gameService.updateGame(game);
+        gameService.updateGame(removePlayerFromGame(user, game));
         connections.leave(String.valueOf(game.gameID()), session);
         connections.broadcast(session,
                 new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                         user + " has left the game."),
                 String.valueOf(game.gameID()));
+    }
+
+    private GameData removePlayerFromGame(String user, GameData game) {
+        String playerColor = Objects.equals(game.blackUsername(), user) ?
+                "black" : Objects.equals(game.whiteUsername(), user) ?
+                "white" : "observer";
+        if (playerColor.equals("black")) {
+            return new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(),
+                    game.game());
+        } else if (playerColor.equals("white")) {
+            return new GameData(game.gameID(), null, game.blackUsername(), game.gameName(),
+                    game.game());
+        }
+        return game;
+
     }
 
     private void resign(UserGameCommand command, Session session) throws DataAccessException,
