@@ -19,6 +19,22 @@ public class Repl implements ClientOutput {
         this.controller = new ClientController(port, this);
     }
 
+    @Override
+    public void sendNotification(String notification) {
+        printLine("%sNOTIFICATION: %s%s", EscapeSequences.SET_TEXT_COLOR_GREEN,
+                EscapeSequences.SET_TEXT_COLOR_BLACK, notification);
+    }
+
+    @Override
+    public void sendError(String error) {
+        printError("ERROR: " + error);
+    }
+
+    @Override
+    public void sendGame(ChessGame game) {
+        this.game = game;
+    }
+
     private static class ReplException extends Exception {
         public ReplException(String message) {
             super(message);
@@ -194,7 +210,9 @@ public class Repl implements ClientOutput {
                     move(parameters);
                 } catch (ReplException e) {
                     printError(e.getMessage());
-                }            case "resign":
+                }
+                return;
+            case "resign":
                 printLine("Are you sure you want to quit? (y/n)");
                 input = scanner.nextLine();
                 if (input.charAt(0) == 'y') {
@@ -218,6 +236,7 @@ public class Repl implements ClientOutput {
         ChessMove move = new ChessMove(startPosition,
                 stringToPosition(parameters[2]), null);
         if (!game.validMoves(startPosition).contains(move)){
+            System.out.printf("%s, %s, %s%n", startPosition, move, game.validMoves(startPosition).toString());
             throw new ReplException("ERROR: invalid move");
         }
         controller.move(move);
@@ -295,14 +314,16 @@ public class Repl implements ClientOutput {
         }
         int column;
         try {
-           column = position.charAt(1);
+           column = Character.getNumericValue(position.charAt(1));
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new ReplException("Invalid column position");
         }
         if (column < 1 || column > 8) {
+            System.out.println(column);
             throw new ReplException("Invalid column position");
         }
-        return new ChessPosition(row, column);
+        return new ChessPosition(column, row);
 
     }
 

@@ -111,7 +111,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         var move = command.getMove();
         game.makeMove(move);
-
         gameService.updateGame(new GameData(gameData.gameID(), gameData.whiteUsername(),
                 gameData.blackUsername(), gameData.gameName(), game));
         connections.broadcast(null, new LoadGameMessage(
@@ -145,8 +144,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private static ChessGame getGame(GameData gameData, String user) throws WebSocketException {
-        String playerColor = gameData.blackUsername().equals(user) ?
-                "black" : gameData.whiteUsername().equals(user) ?
+        String playerColor = Objects.equals(gameData.blackUsername(), user) ?
+                "black" : Objects.equals(gameData.whiteUsername(), user) ?
                 "white" : "observer";
         if (playerColor.equals("observer")) {
             throw new WebSocketException("Observers cannot make moves.");

@@ -84,43 +84,54 @@ public class ClientController implements Observer{
         state = State.SIGNED_OUT;
     }
 
-    public void resign() {
-        facade.resign();
+    public void resign() throws ClientControlException {
+        try {
+            facade.resign();
+        } catch (ServerFacadeException e) {
+            throw new ClientControlException(e.getMessage());
+        }
     }
 
-    public void leave() {
-        facade.leave();
-        state = State.SIGNED_IN;
+    public void leave() throws ClientControlException {
+        try {
+            facade.leave();
+            state = State.SIGNED_IN;
+        } catch (ServerFacadeException e) {
+            throw new ClientControlException(e.getMessage());
+        }
+
     }
 
-    public void move(ChessMove move) {
-        facade.move(move);
+    public void move(ChessMove move) throws ClientControlException{
+        try {
+            facade.move(move);
+        } catch (ServerFacadeException e) {
+            throw new ClientControlException(e.getMessage());
+        }
     }
 
     @Override
     public void notify(ServerMessage message) {
-        if (message.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
-            handleNotificationMessage((NotificationMessage) message);
-            return;
-        }
-        if (message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
-            handleLoadGameMessage((LoadGameMessage) message);
-            return;
-        }
-        if (message.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
-            handleErrorMessage((ErrorMessage) message);
+        System.out.println("Received notification");
+        switch (message.getServerMessageType()){
+            case ServerMessage.ServerMessageType.NOTIFICATION ->
+                    handleNotificationMessage((NotificationMessage) message);
+            case ServerMessage.ServerMessageType.LOAD_GAME ->
+                    handleLoadGameMessage((LoadGameMessage) message);
+            case ServerMessage.ServerMessageType.ERROR ->
+                    handleErrorMessage((ErrorMessage) message);
         }
     }
 
     private void handleNotificationMessage(NotificationMessage message) {
-        throw new RuntimeException("Not implemented");
+        output.sendNotification(message.getMessage());
     }
 
     private void handleErrorMessage(ErrorMessage message) {
-        throw new RuntimeException("Not implemented");
+        output.sendError(message.getMessage());
     }
 
     private void handleLoadGameMessage(LoadGameMessage message) {
-        throw new RuntimeException("Not implemented");
+        output.sendGame(message.getGame());
     }
 }

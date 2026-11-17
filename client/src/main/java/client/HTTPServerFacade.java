@@ -116,7 +116,7 @@ public class HTTPServerFacade implements ServerFacade{
     public void joinGame(String color, String gameID) throws ServerFacadeException {
         try {
             var body = Map.of("playerColor", color, "gameID", gameID);
-            this.gameID = Integer.getInteger(gameID);
+            this.gameID = Integer.parseInt(gameID);
             put(port, "/game", body, "authorization", authToken);
             sendCommand(UserGameCommand.CommandType.CONNECT);
         } catch(Exception e) {

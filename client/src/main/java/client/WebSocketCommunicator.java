@@ -9,12 +9,13 @@ import java.net.URI;
 
 public class WebSocketCommunicator extends Endpoint {
     Observer observer;
-    public Session session;
-    public URI uri;
+    private Session session;
 
     public WebSocketCommunicator(Observer observer, int port) throws Exception {
         this.observer = observer;
-        this.uri = URI.create(String.format("ws://localhost:%s/ws", port));
+        URI uri = URI.create(String.format("ws://localhost:%s/ws", port));
+        var container = ContainerProvider.getWebSocketContainer();
+        container.connectToServer(this, uri);
     }
 
     public void send(String msg) throws Exception {

@@ -25,6 +25,7 @@ public class ConnectionManager {
         for (Session session : connections.get(gameID)) {
             if (session.isOpen()) {
                 if (!session.equals(excludeSession)) {
+                    System.out.println(stringMessage);
                     session.getRemote().sendString(stringMessage);
                 }
             }
