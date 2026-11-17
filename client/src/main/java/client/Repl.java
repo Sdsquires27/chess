@@ -190,25 +190,24 @@ public class Repl implements ClientOutput {
             case "resign":
                 throw new RuntimeException("Not implemented");
             case "highlight":
-                highlight(parameters);
+                try {
+                    highlight(parameters);
+                } catch (ReplException e) {
+                    printError(e.getMessage());
+                }
         }
     }
 
-    private void highlight(String[] parameters) {
+    private void highlight(String[] parameters) throws ReplException{
         if (invalidParameters(2, parameters.length)){
             return;
         }
         ChessPosition position;
-        try {
-            position = stringToPosition(parameters[1]);
-        } catch (ReplException e) {
-            printError("ERROR: invalid position input. Use <ROW+COLUMN> (i.e. e4)");
-            return;
-        }
+        position = stringToPosition(parameters[1]);
+
         var moves = game.validMoves(position);
         if (moves == null) {
-            printError("ERROR: no piece on position selected.");
-            return;
+            throw new ReplException("ERROR: no piece on position selected.");
         }
         printLine(renderer.highlightBoard(game.getBoard(), position, (ArrayList<ChessMove>) moves));
     }

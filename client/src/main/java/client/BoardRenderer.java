@@ -15,8 +15,8 @@ public class BoardRenderer {
         WHITE,
         BLACK
     }
-    final static String BOARD_COLOR_LIGHT = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
-    final static String BOARD_COLOR_DARK = EscapeSequences.SET_BG_COLOR_DARK_GREEN;
+    final static String BOARD_COLOR_LIGHT = EscapeSequences.SET_BG_COLOR_MAGENTA;
+    final static String BOARD_COLOR_DARK = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
     final static String PIECE_COLOR_WHITE = EscapeSequences.SET_TEXT_COLOR_WHITE;
     final static String PIECE_COLOR_BLACK = EscapeSequences.SET_TEXT_COLOR_BLACK;
 
@@ -76,15 +76,17 @@ public class BoardRenderer {
                     .append(String.format(" %s ", i));
             for (int j = j_start; increment < 0 ? j <= j_end : j >= j_end; j += (increment * -1) ) {
                 var pos = new ChessPosition(i, j + 1);
-                String backgroundColor = Objects.equals(piecePosition, pos) ? EscapeSequences.SET_BG_COLOR_YELLOW :
+                String backgroundColor = Objects.equals(piecePosition, pos) ? EscapeSequences.SET_BG_COLOR_BLUE
+                        + EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY:
                         highlightPositions.contains(pos) ? Objects.equals(curBackground, BOARD_COLOR_DARK) ?
-                        EscapeSequences.SET_BG_COLOR_RED : EscapeSequences.SET_BG_COLOR_MAGENTA :
+                        EscapeSequences.SET_BG_COLOR_DARK_GREEN :
+                                EscapeSequences.SET_BG_COLOR_GREEN :
                                 curBackground;
                 builder.append(backgroundColor).append(
                 displayPiece(board.getPiece(pos)));
                 curBackground = curBackground.equals(BOARD_COLOR_DARK) ? BOARD_COLOR_LIGHT : BOARD_COLOR_DARK;
             }
-            curBackground = curBackground == BOARD_COLOR_LIGHT ? BOARD_COLOR_DARK : BOARD_COLOR_LIGHT;
+            curBackground = curBackground.equals(BOARD_COLOR_LIGHT) ? BOARD_COLOR_DARK : BOARD_COLOR_LIGHT;
             builder.append(EscapeSequences.SET_BG_COLOR_WHITE + EscapeSequences.SET_TEXT_COLOR_BLACK)
                     .append(String.format(" %s ", i))
                     .append("\n");
