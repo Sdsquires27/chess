@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import model.GameData;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -51,6 +52,7 @@ public class ClientController implements Observer{
         }
         var game = games.get(id - 1);
         facade.joinGame(color.toUpperCase(), String.valueOf(game.gameID()));
+        state = State.IN_GAME;
         return game.game();
     }
 
@@ -80,6 +82,19 @@ public class ClientController implements Observer{
     public void logout() {
         facade.logout();
         state = State.SIGNED_OUT;
+    }
+
+    public void resign() {
+        facade.resign();
+    }
+
+    public void leave() {
+        facade.leave();
+        state = State.SIGNED_IN;
+    }
+
+    public void move(ChessMove move) {
+        facade.move(move);
     }
 
     @Override

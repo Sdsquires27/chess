@@ -1,10 +1,12 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import model.GameData;
+import websocket.commands.UserGameCommand;
 import websocket.messages.*;
 
 import java.util.*;
@@ -116,5 +118,20 @@ public class HTTPServerFacade implements ServerFacade{
         } catch(Exception e) {
             joinOrCreateException(e);
         }
+    }
+
+    @Override
+    public void leave() throws ServerFacadeException {
+
+    }
+
+    @Override
+    public void resign() throws ServerFacadeException {
+
+    }
+
+    @Override
+    public void move(ChessMove move) throws ServerFacadeException {
+
     }
 }

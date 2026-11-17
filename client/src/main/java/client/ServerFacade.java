@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import model.GameData;
 import server.Server;
 
@@ -13,4 +14,7 @@ public interface ServerFacade {
     public void logout() throws ServerFacadeException;
     public void createGame(String gameName) throws ServerFacadeException;
     public void joinGame(String color, String gameID) throws ServerFacadeException;
+    public void leave() throws  ServerFacadeException;
+    public void resign() throws ServerFacadeException;
+    public void move(ChessMove move) throws ServerFacadeException;
 }

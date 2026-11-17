@@ -1,6 +1,7 @@
 package client;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 import chess.ChessGame;
@@ -182,13 +183,24 @@ public class Repl implements ClientOutput {
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 return;
             case "redraw":
-                throw new RuntimeException("Not implemented");
+                printLine(renderer.displayBoard(game.getBoard()));
+                return;
             case "leave":
-                throw new RuntimeException("Not implemented");
+                controller.leave();
+                printLine("Left game successfully.");
+                return;
             case "move":
-                throw new RuntimeException("Not implemented");
-            case "resign":
-                throw new RuntimeException("Not implemented");
+                try {
+                    move(parameters);
+                } catch (ReplException e) {
+                    printError(e.getMessage());
+                }            case "resign":
+                printLine("Are you sure you want to quit? (y/n)");
+                input = scanner.nextLine();
+                if (input.charAt(0) == 'y') {
+                    controller.resign();
+                }
+                return;
             case "highlight":
                 try {
                     highlight(parameters);
@@ -196,6 +208,19 @@ public class Repl implements ClientOutput {
                     printError(e.getMessage());
                 }
         }
+    }
+
+    private void move(String[] parameters) throws ReplException{
+        if (invalidParameters(3, parameters.length)){
+            return;
+        }
+        var startPosition = stringToPosition(parameters[1]);
+        ChessMove move = new ChessMove(startPosition,
+                stringToPosition(parameters[2]), null);
+        if (!game.validMoves(startPosition).contains(move)){
+            throw new ReplException("ERROR: invalid move");
+        }
+        controller.move(move);
     }
 
     private void highlight(String[] parameters) throws ReplException{
