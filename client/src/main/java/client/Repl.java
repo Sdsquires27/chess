@@ -1,15 +1,27 @@
 package client;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import ui.EscapeSequences;
 
-public class Repl {
+public class Repl implements ClientOutput {
     Scanner scanner = new Scanner(System.in);
     ClientController controller;
+    BoardRenderer renderer;
+    ChessGame game;
 
-    Repl(ClientController controller) {
-        this.controller = controller;
+    Repl(int port) throws Exception {
+        this.controller = new ClientController(port, this);
+    }
+
+    private static class ReplException extends Exception {
+        public ReplException(String message) {
+            super(message);
+        }
     }
 
     public void run() {
@@ -168,6 +180,7 @@ public class Repl {
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 printLine("help%s - to list commands",
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                return;
             case "redraw":
                 throw new RuntimeException("Not implemented");
             case "leave":
@@ -177,16 +190,35 @@ public class Repl {
             case "resign":
                 throw new RuntimeException("Not implemented");
             case "highlight":
-                throw new RuntimeException("Not implemented");
+                highlight(parameters);
         }
+    }
+
+    private void highlight(String[] parameters) {
+        if (invalidParameters(2, parameters.length)){
+            return;
+        }
+        ChessPosition position;
+        try {
+            position = stringToPosition(parameters[1]);
+        } catch (ReplException e) {
+            printError("ERROR: invalid position input. Use <ROW+COLUMN> (i.e. e4)");
+            return;
+        }
+        var moves = game.validMoves(position);
+        if (moves == null) {
+            printError("ERROR: no piece on position selected.");
+            return;
+        }
+        printLine(renderer.highlightBoard(game.getBoard(), position, (ArrayList<ChessMove>) moves));
     }
 
     private void join(String[] parameters) {
         if (invalidParameters(3, parameters.length)){
             return;
         }
-        var renderer = new BoardRenderer(parameters[2]);
-        var game = controller.join(parameters[1], parameters[2]);
+        renderer = new BoardRenderer(parameters[2]);
+        game = controller.join(parameters[1], parameters[2]);
         printLine("Joined game successfully!");
         printLine(renderer.displayBoard(game.getBoard()));
     }
@@ -219,6 +251,35 @@ public class Repl {
                     game.whiteUsername() == null ? "" : game.whiteUsername(),
                     game.blackUsername() == null ? "" : game.blackUsername());
         }
+    }
+
+    private static ChessPosition stringToPosition(String position) throws ReplException{
+        if (position.length() != 2) {
+            throw new ReplException("Incorrect number of characters");
+        }
+        int row;
+        switch(position.charAt(0)) {
+            case 'a' -> row = 1;
+            case 'b' -> row = 2;
+            case 'c' -> row = 3;
+            case 'd' -> row = 4;
+            case 'e' -> row = 5;
+            case 'f' -> row = 6;
+            case 'g' -> row = 7;
+            case 'h' -> row = 8;
+            default -> throw new ReplException("Invalid row position");
+        }
+        int column;
+        try {
+           column = position.charAt(1);
+        } catch (Exception e) {
+            throw new ReplException("Invalid column position");
+        }
+        if (column < 1 || column > 8) {
+            throw new ReplException("Invalid column position");
+        }
+        return new ChessPosition(row, column);
+
     }
 
     private static boolean invalidParameters(int minParameters, int numParameters) {

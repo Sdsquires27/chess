@@ -6,7 +6,7 @@ public class ClientMain {
     public static void main(String[] args) {
         System.out.println("♕ 240 Chess Client");
         try {
-            new Repl(new ClientController(8080)).run();
+            new Repl(8080).run();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

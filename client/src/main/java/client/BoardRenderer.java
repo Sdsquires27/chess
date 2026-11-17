@@ -1,9 +1,14 @@
 package client;
 
 import chess.ChessBoard;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import ui.EscapeSequences;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 
 public class BoardRenderer {
     enum Color {
@@ -34,7 +39,19 @@ public class BoardRenderer {
         throw new BoardRendererException("invalid color input");
 
     }
+
     public String displayBoard(ChessBoard board) {
+        return displayBoardHelper(board, null, new ArrayList<>());
+    }
+
+    public String highlightBoard(ChessBoard board, ChessPosition piecePosition, ArrayList<ChessMove> moves){
+        ArrayList<ChessPosition> positions = new ArrayList<>();
+        moves.forEach(move -> positions.add(move.getEndPosition()));
+        return displayBoardHelper(board, piecePosition, positions);
+    }
+
+    private String displayBoardHelper(ChessBoard board, ChessPosition piecePosition,
+                                      ArrayList<ChessPosition> highlightPositions) {
         StringBuilder builder = new StringBuilder();
         builder.append(EscapeSequences.SET_BG_COLOR_WHITE +
                 EscapeSequences.SET_TEXT_COLOR_BLACK +
@@ -58,8 +75,13 @@ public class BoardRenderer {
             builder.append(EscapeSequences.SET_BG_COLOR_WHITE + EscapeSequences.SET_TEXT_COLOR_BLACK)
                     .append(String.format(" %s ", i));
             for (int j = j_start; increment < 0 ? j <= j_end : j >= j_end; j += (increment * -1) ) {
-                builder.append(curBackground).append(
-                        displayPiece(board.getPiece(new ChessPosition(i, j + 1))));
+                var pos = new ChessPosition(i, j + 1);
+                String backgroundColor = Objects.equals(piecePosition, pos) ? EscapeSequences.SET_BG_COLOR_YELLOW :
+                        highlightPositions.contains(pos) ? Objects.equals(curBackground, BOARD_COLOR_DARK) ?
+                        EscapeSequences.SET_BG_COLOR_RED : EscapeSequences.SET_BG_COLOR_MAGENTA :
+                                curBackground;
+                builder.append(backgroundColor).append(
+                displayPiece(board.getPiece(pos)));
                 curBackground = curBackground.equals(BOARD_COLOR_DARK) ? BOARD_COLOR_LIGHT : BOARD_COLOR_DARK;
             }
             curBackground = curBackground == BOARD_COLOR_LIGHT ? BOARD_COLOR_DARK : BOARD_COLOR_LIGHT;

@@ -12,11 +12,14 @@ import java.util.List;
 
 public class ClientController implements Observer{
     private final ServerFacade facade;
+    private final ClientOutput output;
     public State state;
-    public ClientController(int port) throws Exception {
+    public ClientController(int port, ClientOutput output) throws Exception {
         this.facade = new HTTPServerFacade(port, this);
+        this.output = output;
         state = State.SIGNED_OUT;
     }
+
 
     public void register(String username, String password, String email) {
         facade.register(username, password, email);
