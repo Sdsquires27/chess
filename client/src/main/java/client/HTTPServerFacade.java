@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import model.GameData;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.*;
 
@@ -16,6 +17,7 @@ import static client.HTTPCommunicator.*;
 public class HTTPServerFacade implements ServerFacade{
         int port;
         String authToken;
+        Integer gameID;
         Observer observer;
         WebSocketCommunicator webSocketCommunicator;
 
@@ -114,7 +116,9 @@ public class HTTPServerFacade implements ServerFacade{
     public void joinGame(String color, String gameID) throws ServerFacadeException {
         try {
             var body = Map.of("playerColor", color, "gameID", gameID);
+            this.gameID = Integer.getInteger(gameID);
             put(port, "/game", body, "authorization", authToken);
+            sendCommand(UserGameCommand.CommandType.CONNECT);
         } catch(Exception e) {
             joinOrCreateException(e);
         }
@@ -122,16 +126,36 @@ public class HTTPServerFacade implements ServerFacade{
 
     @Override
     public void leave() throws ServerFacadeException {
+        try {
+            sendCommand(UserGameCommand.CommandType.LEAVE);
+        } catch (Exception e) {
+            throw new ServerFacadeException("Server responded with error");
+        }
+    }
 
+    public void sendCommand(UserGameCommand.CommandType type) throws Exception{
+        var command = new UserGameCommand(type,
+                authToken, this.gameID);
+        webSocketCommunicator.send(new Gson().toJson(command));
     }
 
     @Override
     public void resign() throws ServerFacadeException {
-
+        try {
+            sendCommand(UserGameCommand.CommandType.RESIGN);
+        } catch (Exception e) {
+            throw new ServerFacadeException("Server responded with error");
+        }
     }
 
     @Override
     public void move(ChessMove move) throws ServerFacadeException {
-
+        try {
+            var command = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE,
+                    authToken, this.gameID, move);
+            webSocketCommunicator.send(new Gson().toJson(command));
+        } catch (Exception e) {
+            throw new ServerFacadeException("Server responded with error");
+        }
     }
 }
