@@ -1,10 +1,7 @@
 package client;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.*;
 import server.Server;
-import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,13 +11,13 @@ public class ServerFacadeTests {
     private static Server server;
     private static ServerFacade facade;
     private static int port;
-    private static final TestObserver observer = new TestObserver();
+    private static final TestObserver OBSERVER = new TestObserver();
 
     @BeforeAll
     public static void init() {
         server = new Server();
         port = server.run(0);
-        facade = assertDoesNotThrow(() -> new HTTPServerFacade(port, observer));
+        facade = assertDoesNotThrow(() -> new HTTPServerFacade(port, OBSERVER));
         System.out.println("Started test HTTP server on " + port);
     }
 
