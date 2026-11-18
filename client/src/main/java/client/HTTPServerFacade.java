@@ -1,10 +1,7 @@
 package client;
 
-import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
 import model.GameData;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
