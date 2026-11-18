@@ -76,6 +76,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(UserGameCommand command, Session session) throws DataAccessException, IOException,
             WebSocketException {
+        System.out.println("Connecting player");
         var gameID = String.valueOf(command.getGameID());
         var username = userService.findUser(new AuthTokenRequest(command.getAuthToken()));
         if (username == null) {

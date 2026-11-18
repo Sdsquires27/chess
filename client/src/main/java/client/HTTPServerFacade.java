@@ -155,4 +155,14 @@ public class HTTPServerFacade implements ServerFacade{
             throw new ServerFacadeException("Server responded with error");
         }
     }
+
+    @Override
+    public void observe(String gameID) throws ServerFacadeException {
+            try {
+                this.gameID = Integer.parseInt(gameID);
+                sendCommand(UserGameCommand.CommandType.CONNECT);
+            } catch (Exception e) {
+                throw new ServerFacadeException("Server responded with error");
+            }
+    }
 }

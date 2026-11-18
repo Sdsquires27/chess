@@ -56,6 +56,23 @@ public class ClientController implements Observer{
         return game.game();
     }
 
+    public ChessGame observe(String idString) throws ClientControlException {
+        int id;
+        try {
+            id = Integer.parseInt(idString);
+        } catch (NumberFormatException e) {
+            throw new ClientControlException("invalid number input.");
+        }
+        var games = listGames();
+        if (id > games.size() || id < 1) {
+            throw new ClientControlException("requested game does not exist.");
+        }
+        var game = games.get(id - 1);
+        facade.observe(String.valueOf(game.gameID()));
+        state = State.OBSERVING;
+        return game.game();
+    }
+
     public int create(String gameName) {
         facade.createGame(gameName);
         return facade.listGames().size();

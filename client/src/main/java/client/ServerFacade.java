@@ -15,4 +15,5 @@ public interface ServerFacade {
     public void leave() throws  ServerFacadeException;
     public void resign() throws ServerFacadeException;
     public void move(ChessMove move) throws ServerFacadeException;
+    public void observe(String gameName) throws ServerFacadeException;
 }

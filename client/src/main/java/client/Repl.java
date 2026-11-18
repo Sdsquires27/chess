@@ -54,6 +54,8 @@ public class Repl implements ClientOutput {
                 handlePostLoginInput(input);
             } else if (controller.state.equals(State.IN_GAME)) {
                 handleInGameInput(input);
+            } else if (controller.state.equals(State.OBSERVING)) {
+                handleObservingInput(input);
             }
         }
     }
@@ -98,6 +100,38 @@ public class Repl implements ClientOutput {
             case "quit":
                 controller.quit();
                 printLine("Bye!");
+                return;
+            default:
+                printError("ERROR: command not recognized. Type help for a list of commands.");
+        }
+    }
+
+    private void handleObservingInput(String input) {
+        var parameters = input.split(" ");
+        switch(parameters[0].toLowerCase()){
+            case "help":
+                printLine("leave%s - to stop observing game",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                printLine("redraw%s - to redraw the board",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                printLine("highlight <POSITION>%s - highlight legal moves for a piece",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                printLine("help%s - to list commands",
+                        EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
+                return;
+            case "leave":
+                controller.leave();
+                printLine("Left game successfully.");
+                return;
+            case "redraw":
+                printLine(renderer.displayBoard(game.getBoard()));
+                return;
+            case "highlight":
+                try {
+                    highlight(parameters);
+                } catch (ReplException e) {
+                    printError(e.getMessage());
+                }
                 return;
             default:
                 printError("ERROR: command not recognized. Type help for a list of commands.");
@@ -219,6 +253,8 @@ public class Repl implements ClientOutput {
                 input = scanner.nextLine();
                 if (input.charAt(0) == 'y') {
                     controller.resign();
+                } else {
+                    printLine("Continuing with game");
                 }
                 return;
             case "highlight":
@@ -302,10 +338,10 @@ public class Repl implements ClientOutput {
         if (invalidParameters(2, parameters.length)){
             return;
         }
-        var game = controller.findGame(parameters[1]);
+        game = controller.observe(parameters[1]);
         printLine("Joined game successfully!");
-        var renderer = new BoardRenderer("WHITE");
-        printLine(renderer.displayBoard(game.game().getBoard()));
+        renderer = new BoardRenderer("WHITE");
+        printLine(renderer.displayBoard(game.getBoard()));
     }
 
     private void list() {
