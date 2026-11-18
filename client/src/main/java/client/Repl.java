@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import ui.EscapeSequences;
 
@@ -32,7 +33,6 @@ public class Repl implements ClientOutput {
 
     @Override
     public void sendGame(ChessGame game) {
-        printLine("Game sent");
         this.game = game;
         printLine(renderer.displayBoard(game.getBoard()));
     }
@@ -191,7 +191,7 @@ public class Repl implements ClientOutput {
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 printLine("leave%s - to exit the game",
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
-                printLine("move <POSITION> <POSITION>%s - to move a piece",
+                printLine("move <POSITION> <POSITION> [PROMOTION]%s - to move a piece",
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 printLine("resign%s - to forfeit the game",
                         EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
@@ -238,9 +238,37 @@ public class Repl implements ClientOutput {
             return;
         }
         var startPosition = stringToPosition(parameters[1]);
-        ChessMove move = new ChessMove(startPosition,
-                stringToPosition(parameters[2]), null);
-        if (!game.validMoves(startPosition).contains(move)){
+        var moves = game.validMoves(startPosition);
+        if (moves == null) {
+            throw new ReplException("ERROR: no piece at starting position");
+        }
+        boolean canPromote = false;
+        for (var move : moves) {
+            if(move.getPromotionPiece() != null) {
+                canPromote = true;
+                break;
+            }
+        }
+        ChessMove move;
+        if (canPromote) {
+            if (invalidParameters(4, parameters.length)){
+                return;
+            }
+            var promotion = switch(parameters[3].toLowerCase()) {
+                case "queen" -> ChessPiece.PieceType.QUEEN;
+                case "knight" -> ChessPiece.PieceType.KNIGHT;
+                case "rook" -> ChessPiece.PieceType.ROOK;
+                case "bishop" -> ChessPiece.PieceType.BISHOP;
+                default -> throw new ReplException("ERROR: invalid promotion (QUEEN|KNIGHT|ROOK|BISHOP)");
+            };
+            move = new ChessMove(startPosition, stringToPosition(parameters[2]), promotion);
+        }
+        else{
+            move = new ChessMove(startPosition,
+                    stringToPosition(parameters[2]), null);
+        }
+
+        if (!moves.contains(move)) {
             throw new ReplException("ERROR: invalid move");
         }
         controller.move(move);

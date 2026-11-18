@@ -63,10 +63,16 @@ public class GameService extends ChessService{
             if (game.blackUsername() != null){
                 throw new AlreadyTakenException();
             }
+            if (Objects.equals(username, game.whiteUsername())){
+                throw new AlreadyTakenException();
+            }
             newGame = new GameData(id, game.whiteUsername(), username, game.gameName(), game.game());
         }
         if (Objects.equals(playerColor, "WHITE")){
             if (game.whiteUsername() != null){
+                throw new AlreadyTakenException();
+            }
+            if (Objects.equals(username, game.blackUsername())){
                 throw new AlreadyTakenException();
             }
             newGame = new GameData(id, username, game.blackUsername(), game.gameName(), game.game());

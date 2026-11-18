@@ -121,18 +121,32 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 ServerMessage.ServerMessageType.LOAD_GAME, game),
                 String.valueOf(gameData.gameID()));
         connections.broadcast(session, new NotificationMessage(
-                ServerMessage.ServerMessageType.NOTIFICATION, "Move " + moveName(move)
+                ServerMessage.ServerMessageType.NOTIFICATION, user + " has moved " + moveName(move)
                 ), String.valueOf(gameData.gameID()));
         if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
             game.state = ChessGame.GameState.WHITE_VICTORY;
             connections.broadcast(null, new NotificationMessage(
-               ServerMessage.ServerMessageType.NOTIFICATION, "Black has won!"
+               ServerMessage.ServerMessageType.NOTIFICATION, gameData.blackUsername() + " is in checkmate! " +
+                    gameData.whiteUsername() + " has won!"
             ), String.valueOf(gameData.gameID()));
+            return;
         }
         if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
             game.state = ChessGame.GameState.BLACK_VICTORY;
             connections.broadcast(null, new NotificationMessage(
-                    ServerMessage.ServerMessageType.NOTIFICATION, "White has won!"
+                    ServerMessage.ServerMessageType.NOTIFICATION, gameData.whiteUsername() +
+                    " is in checkmate! " + gameData.blackUsername() + " has won!"
+            ), String.valueOf(gameData.gameID()));
+            return;
+        }
+        if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+            connections.broadcast(null, new NotificationMessage(
+                    ServerMessage.ServerMessageType.NOTIFICATION,
+                    gameData.blackUsername() + " is in check!"), String.valueOf(gameData.gameID()));
+        }
+        if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
+            connections.broadcast(null, new NotificationMessage(
+                    ServerMessage.ServerMessageType.NOTIFICATION, gameData.whiteUsername() + " is in check!"
             ), String.valueOf(gameData.gameID()));
         }
     }
@@ -140,8 +154,18 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private String moveName(ChessMove move) {
         StringBuilder moveName = new StringBuilder();
         for (var position : new ChessPosition[] {move.getStartPosition(), move.getEndPosition()}){
-            moveName.append(Character.forDigit(position.getRow() + 1, 10));
-            moveName.append(position.getColumn() + 1);
+            moveName.append(switch(position.getColumn()) {
+                case 1 -> "a";
+                case 2 -> "b";
+                case 3 -> "c";
+                case 4 -> "d";
+                case 5 -> "e";
+                case 6 -> "f";
+                case 7 -> "g";
+                case 8 -> "h";
+                default -> throw new RuntimeException("Invalid chess position");
+            });
+            moveName.append(position.getRow());
         }
 
         return moveName.toString();
